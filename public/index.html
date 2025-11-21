@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/loading.css">
+    <title>Login page</title>
+</head>
+
+<body class="center-wrapper">
+
+    <!-- Loading Screen -->
+    <section id="loading-screen">
+        <section class="loader"></section>
+        <p>Loading, please wait...</p>
+    </section>
+
+
+
+    <section id="blackLineTop"></section>
+    <section id="blackLineBottom"></section>
+
+    <section id="bg">
+        <section class="bgSlide"></section>
+        <section class="bgSlide"></section>
+        <section class="bgSlide"></section>
+    </section>
+
+    <section class="LoginContainer">
+        <h1>Login</h1>
+
+        <section class="inputSection">
+            <input id="emailInput" type="text" placeholder="Email" />
+        </section>
+
+        <section class="inputSection">
+            <input id="passInput" type="password" placeholder="Password" />
+        </section>
+
+        <input id="loginBtn" type="button" value="Login" />
+
+        <p>Don't have an account? <span id="signupBtn">Signup</span></p>
+        <p><span id="forgotPasswordBtn" style="cursor: pointer; color: #00f;">Forgot Password?</span></p>
+    </section>
+
+    <!-- Forgot Password Modal -->
+    <section id="editModal" class="modal">
+        <section class="modal-content">
+            <span id="closeModal" class="close">&times;</span>
+            <h2>Edit User</h2>
+            <form id="editForm">
+                <label for="modalEmail">New Email:</label>
+                <input type="email" id="modalEmail" required><br>
+
+                <label for="modalPassword">New Password:</label>
+                <input type="password" id="modalPassword"><br>
+
+                <button type="submit">Update</button>
+            </form>
+            <p id="editStatus" class="status-message"></p>
+        </section>
+    </section>
+
+    <script src="js/login.js"></script>
+    <script src="js/loading.js"></script>
+    <script src="js/syncFavorite.js"></script>
+
+</body>
+
+</html>
