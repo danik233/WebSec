@@ -4,13 +4,13 @@ const mongoose = require("mongoose");
 const path = require("path");
 const cors = require("cors");
 const fs = require("fs");
-const bcrypt = require("bcrypt");
+const argon2 = require("argon2");
 const nodemailer = require("nodemailer");
 const User = require("./modules/user");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SALT_ROUNDS = 10;
+
 
 // Block access to JSON data files
 app.use((req, res, next) => {
@@ -113,7 +113,7 @@ app.post("/login", async (req, res) => {
         if (!user)
             return res.status(404).json({ message: "User not found. Please signup." });
 
-        const passwordMatch = await bcrypt.compare(password, user.password);
+        const passwordMatch = await argon2.verify(user.password, password);
         if (!passwordMatch)
             return res.status(401).json({ message: "Incorrect password." });
 
@@ -154,7 +154,7 @@ app.post("/signup", async (req, res) => {
         if (exists)
             return res.status(409).json({ message: "Email already exists." });
 
-        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+        const hashedPassword = await argon2.hash(password);
 
         const newUser = new User({ email, password: hashedPassword, paid, favArray });
         await newUser.save();
@@ -210,7 +210,7 @@ app.put("/api/users/:email", async (req, res) => {
 
         // Change password
         if (newPassword)
-            user.password = await bcrypt.hash(newPassword, SALT_ROUNDS);
+            user.password = await argon2.hash(newPassword);
 
         if (typeof newPaid === "boolean")
             user.paid = newPaid;

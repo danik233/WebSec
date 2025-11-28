@@ -1,35 +1,8 @@
 [
   {
-    "_id": "6918decac0bc27d729823091",
-    "email": "a@gmail.com",
-    "password": "$2b$10$ffniJODO1ius2plh3vm/UuHiT27R2k6H/1ct7N4YpkXwspi2GTrEO",
-    "paid": true,
-    "favArray": [],
-    "signupDate": "2025-11-15T20:12:58.555Z",
-    "__v": 0
-  },
-  {
-    "_id": "6918dedec0bc27d729823097",
-    "email": "asa@gmail.com",
-    "password": "$2b$10$Zoim3RQHQ5mWdhHAtkFiP.R4F.ivhEuulwaFGQwte7clEsHymSeyq",
-    "paid": true,
-    "favArray": [],
-    "signupDate": "2025-11-15T20:13:18.957Z",
-    "__v": 0
-  },
-  {
-    "_id": "69196e0f75ecd1dd7041211e",
-    "email": "dzirkiev95@gmail.com",
-    "password": "$2b$10$vaD20WNstmmx2TMJhYhMC.4A2YD2err5/iX7UwgP22Z66M2LZYEkm",
-    "paid": false,
-    "favArray": [],
-    "signupDate": "2025-11-16T06:24:15.821Z",
-    "__v": 0
-  },
-  {
     "_id": "691e06ca814df9c81d65f1b3",
     "email": "dzirkiev35@gmail.com",
-    "password": "$2b$10$oQ54/oWDka0R41ackGTyveVS/tB/L6/KWsv4Q10KvBHyARDjwfwjq",
+    "password": "$2b$10$NqpvPOGo1/ta1pniHZYPDeVPD9R2DHfA/W2OiUsXS.nTaAJTW2IXC",
     "paid": true,
     "favArray": [
       {
@@ -195,5 +168,135 @@
     ],
     "signupDate": "2025-11-19T18:04:58.827Z",
     "__v": 1
+  },
+  {
+    "_id": "6929c3f68a5f43b469483b3e",
+    "email": "dzirkiev5@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$I0uRKF9eduz0mY2LtUpHEA$l/VirEx+C80ak6agyZH/4mMT7BaOWtx4kHurME5LDEo",
+    "paid": false,
+    "favArray": [
+      {
+        "Title": "Ted 2",
+        "Year": "2015",
+        "Rated": "R",
+        "Released": "26 Jun 2015",
+        "Runtime": "115 min",
+        "Genre": "Comedy",
+        "Director": "Seth MacFarlane",
+        "Writer": "Seth MacFarlane, Alec Sulkin, Wellesley Wild",
+        "Actors": "Mark Wahlberg, Seth MacFarlane, Amanda Seyfried",
+        "Plot": "Newlywed couple Ted and Tami-Lynn want to have a baby, but in order to qualify to be a parent, Ted will have to prove he's a person in a court of law.",
+        "Language": "English, Ukrainian",
+        "Country": "United States",
+        "Awards": "3 wins & 4 nominations total",
+        "Poster": "https://m.media-amazon.com/images/M/MV5BMjEwMDg3MDk1NF5BMl5BanBnXkFtZTgwNjYyODA1NTE@._V1_SX300.jpg",
+        "Ratings": [
+          {
+            "Source": "Internet Movie Database",
+            "Value": "6.3/10"
+          },
+          {
+            "Source": "Rotten Tomatoes",
+            "Value": "45%"
+          },
+          {
+            "Source": "Metacritic",
+            "Value": "48/100"
+          }
+        ],
+        "Metascore": "48",
+        "imdbRating": "6.3",
+        "imdbVotes": "253,831",
+        "imdbID": "tt2637276",
+        "Type": "movie",
+        "DVD": "N/A",
+        "BoxOffice": "$81,476,385",
+        "Production": "N/A",
+        "Website": "N/A",
+        "Response": "True"
+      },
+      {
+        "Title": "Hell or High Water",
+        "Year": "2016",
+        "Rated": "R",
+        "Released": "26 Aug 2016",
+        "Runtime": "102 min",
+        "Genre": "Crime, Drama, Thriller",
+        "Director": "David Mackenzie",
+        "Writer": "Taylor Sheridan",
+        "Actors": "Chris Pine, Ben Foster, Jeff Bridges",
+        "Plot": "Toby is a divorced father who's trying to make a better life. His brother is an ex-con with a short temper and a loose trigger finger. Together, they plan a series of heists against the bank that's about to foreclose on their fami...",
+        "Language": "English",
+        "Country": "United States",
+        "Awards": "Nominated for 4 Oscars. 47 wins & 174 nominations total",
+        "Poster": "https://m.media-amazon.com/images/M/MV5BMTg4NDA1OTA5NF5BMl5BanBnXkFtZTgwMDQ2MDM5ODE@._V1_SX300.jpg",
+        "Ratings": [
+          {
+            "Source": "Internet Movie Database",
+            "Value": "7.6/10"
+          },
+          {
+            "Source": "Rotten Tomatoes",
+            "Value": "97%"
+          },
+          {
+            "Source": "Metacritic",
+            "Value": "88/100"
+          }
+        ],
+        "Metascore": "88",
+        "imdbRating": "7.6",
+        "imdbVotes": "270,535",
+        "imdbID": "tt2582782",
+        "Type": "movie",
+        "DVD": "N/A",
+        "BoxOffice": "$27,007,844",
+        "Production": "N/A",
+        "Website": "N/A",
+        "Response": "True"
+      },
+      {
+        "Title": "From Hell",
+        "Year": "2001",
+        "Rated": "R",
+        "Released": "19 Oct 2001",
+        "Runtime": "122 min",
+        "Genre": "Crime, Horror, Mystery",
+        "Director": "Albert Hughes, Allen Hughes",
+        "Writer": "Alan Moore, Eddie Campbell, Terry Hayes",
+        "Actors": "Johnny Depp, Heather Graham, Ian Holm",
+        "Plot": "In 1888 London, a Scotland Yard investigator searches for Jack The Ripper.",
+        "Language": "English",
+        "Country": "United States, United Kingdom, Czech Republic",
+        "Awards": "15 nominations total",
+        "Poster": "https://m.media-amazon.com/images/M/MV5BNzA5N2RlZDItNzc5My00YjIwLWFiMzktYTI1NDg0MDc1YTY1XkEyXkFqcGc@._V1_SX300.jpg",
+        "Ratings": [
+          {
+            "Source": "Internet Movie Database",
+            "Value": "6.7/10"
+          },
+          {
+            "Source": "Rotten Tomatoes",
+            "Value": "56%"
+          },
+          {
+            "Source": "Metacritic",
+            "Value": "54/100"
+          }
+        ],
+        "Metascore": "54",
+        "imdbRating": "6.7",
+        "imdbVotes": "169,551",
+        "imdbID": "tt0120681",
+        "Type": "movie",
+        "DVD": "N/A",
+        "BoxOffice": "$31,602,566",
+        "Production": "N/A",
+        "Website": "N/A",
+        "Response": "True"
+      }
+    ],
+    "signupDate": "2025-11-28T15:47:02.601Z",
+    "__v": 2
   }
 ]
