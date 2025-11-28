@@ -384,13 +384,15 @@
     "__v": 4
   },
   {
-    "_id": "6929d0d22dd072a4bc736b40",
-    "email": "dzirkiev35@gmail.com",
-    "password": "$argon2id$v=19$m=65536,t=3,p=4$OSaqtX7def8lOxT1YCuoGQ$Qf7b2WnfadA9wS6F1lbhrqbsl93reGAZsJqwp/QPwJw",
-    "paid": false,
+    "_id": "6929d89c2ad6d4c5b591b3f5",
+    "email": "yoav74@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$fWfZgAuQ2IGKAnkZz5YQ6w$vPUeafRjYiI3YQ/5T4CutDj71oFU/FgTGgMy9qtkAC0",
+    "paid": true,
     "role": "USER",
     "favArray": [],
-    "signupDate": "2025-11-28T16:41:54.040Z",
+    "failedAttempts": 5,
+    "lockUntil": "2025-11-28T17:25:41.239Z",
+    "signupDate": "2025-11-28T17:15:08.458Z",
     "__v": 0
   }
 ]

@@ -131,31 +131,61 @@ app.post("/setup", async (req, res) => {
 // ===============================
 // LOGIN
 // ===============================
+
 app.post("/login", async (req, res) => {
     try {
         let { email, password } = req.body;
         if (email) email = email.toLowerCase();
 
+        // Check if both email and password are provided
         if (!email || !password)
             return res.status(400).json({ message: "Email and password required" });
 
-        if (email === "admin@admin" && password === "admin")
+        // Hardcoded admin login
+        if (email === "admin@admin" && password === "admin") {
             return res.json({
                 role: "admin",
                 message: "Admin login successful",
                 redirect: "/admin.html"
             });
+        }
 
+        // Find user by email
         const user = await User.findOne({ email });
         if (!user)
             return res.status(404).json({ message: "User not found. Please signup." });
 
+        // Check if the account is currently locked
+        if (user.lockUntil && user.lockUntil > Date.now()) {
+            return res.status(403).json({ message: "Account locked. Try later." });
+        }
+
+        // Verify the password using argon2
         const passwordMatch = await argon2.verify(user.password, password);
-        if (!passwordMatch)
+
+        if (!passwordMatch) {
+            // Increment failed login attempts
+            user.failedAttempts = (user.failedAttempts || 0) + 1;
+
+            // Lock account after 5 failed attempts
+            if (user.failedAttempts >= 5) {
+                user.lockUntil = Date.now() + 10 * 60 * 1000; // lock for 10 minutes
+                await user.save();
+                return res.status(403).json({ message: "Account locked due to too many failed attempts. Try in 10 minutes." });
+            }
+
+            // Save updated failedAttempts count
+            await user.save();
             return res.status(401).json({ message: "Incorrect password." });
+        }
 
+        // Successful login → reset failedAttempts and lockUntil
+        user.failedAttempts = 0;
+        user.lockUntil = null;
+        await user.save();
+
+        // Respond with user role and redirect page
         const message = user.paid ? "Login successful." : "Login successful. Free trial 30 days.";
-
         res.json({ role: "user", message, redirect: "/homepage.html" });
 
     } catch (err) {
@@ -163,6 +193,8 @@ app.post("/login", async (req, res) => {
         res.status(500).json({ message: "Server error during login" });
     }
 });
+
+
 
 // ===============================
 // SIGNUP
