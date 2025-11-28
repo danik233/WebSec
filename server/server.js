@@ -90,6 +90,44 @@ app.get("/homepage.html", (req, res) => {
     res.sendFile(path.join(__dirname, "..", "public", "homepage.html"));
 });
 
+
+// ===============================
+// FIRST-USER / ADMIN SETUP
+// ===============================
+app.post("/setup", async (req, res) => {
+    try {
+        const userCount = await User.countDocuments();
+        if (userCount > 0)
+            return res.status(403).json({ message: "Setup already completed" });
+
+        const { email, password } = req.body;
+        if (!email || !password)
+            return res.status(400).json({ message: "Email and password required" });
+
+        const hashedPassword = await argon2.hash(password);
+
+        const admin = new User({
+            email: email.toLowerCase(),
+            password: hashedPassword,
+            paid: true,
+            role: "ADMIN"
+        });
+
+        await admin.save();
+        res.status(201).json({ message: "✅ Admin account created successfully" });
+
+    } catch (err) {
+        console.error("❌ Setup error:", err);
+        res.status(500).json({ message: "Server error during admin setup" });
+    }
+});
+
+
+
+
+
+
+
 // ===============================
 // LOGIN
 // ===============================

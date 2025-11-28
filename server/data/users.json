@@ -1,8 +1,8 @@
 [
   {
     "_id": "691e06ca814df9c81d65f1b3",
-    "email": "dzirkiev35@gmail.com",
-    "password": "$2b$10$NqpvPOGo1/ta1pniHZYPDeVPD9R2DHfA/W2OiUsXS.nTaAJTW2IXC",
+    "email": "dzirkiev@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$JtoJvpMJGn2xYUsUEbrc/A$kxrwzmb+oqDOqkIiuspDvR8Rq//SnwaGLnFh4dGQOzM",
     "paid": true,
     "favArray": [
       {
@@ -167,7 +167,8 @@
       }
     ],
     "signupDate": "2025-11-19T18:04:58.827Z",
-    "__v": 1
+    "__v": 1,
+    "role": "USER"
   },
   {
     "_id": "6929c3f68a5f43b469483b3e",
@@ -298,5 +299,88 @@
     ],
     "signupDate": "2025-11-28T15:47:02.601Z",
     "__v": 2
+  },
+  {
+    "_id": "6929cd32a1ca2f6b4c7c5443",
+    "email": "dzirkiev95@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$1BjGXdraujv59mxwdx+YIg$B4UiE2ywmTznvWVAN2bA4QrZaKzxgra1N2lcBEGvcpg",
+    "paid": false,
+    "role": "USER",
+    "favArray": [
+      {
+        "Title": "From Hell",
+        "Year": "2001",
+        "Rated": "R",
+        "Released": "19 Oct 2001",
+        "Runtime": "122 min",
+        "Genre": "Crime, Horror, Mystery",
+        "Director": "Albert Hughes, Allen Hughes",
+        "Writer": "Alan Moore, Eddie Campbell, Terry Hayes",
+        "Actors": "Johnny Depp, Heather Graham, Ian Holm",
+        "Plot": "In 1888 London, a Scotland Yard investigator searches for Jack The Ripper.",
+        "Language": "English",
+        "Country": "United States, United Kingdom, Czech Republic",
+        "Awards": "15 nominations total",
+        "Poster": "https://m.media-amazon.com/images/M/MV5BNzA5N2RlZDItNzc5My00YjIwLWFiMzktYTI1NDg0MDc1YTY1XkEyXkFqcGc@._V1_SX300.jpg",
+        "Ratings": [
+          {
+            "Source": "Internet Movie Database",
+            "Value": "6.7/10"
+          },
+          {
+            "Source": "Rotten Tomatoes",
+            "Value": "56%"
+          },
+          {
+            "Source": "Metacritic",
+            "Value": "54/100"
+          }
+        ],
+        "Metascore": "54",
+        "imdbRating": "6.7",
+        "imdbVotes": "169,551",
+        "imdbID": "tt0120681",
+        "Type": "movie",
+        "DVD": "N/A",
+        "BoxOffice": "$31,602,566",
+        "Production": "N/A",
+        "Website": "N/A",
+        "Response": "True"
+      },
+      {
+        "Title": "Bah Humduck!: A Looney Tunes Christmas",
+        "Year": "2006",
+        "Rated": "TV-G",
+        "Released": "14 Nov 2006",
+        "Runtime": "46 min",
+        "Genre": "Animation, Adventure, Comedy, Family, Musical, Sci-Fi",
+        "Director": "Charles Visser",
+        "Writer": "Ray DeLaurentis",
+        "Actors": "Joe Alaskey, Bob Bergen, Billy West, June Foray",
+        "Plot": "Greedy duck hates Christmas but loves money. Throughout the night, he gets visited by three ghosts.",
+        "Language": "English",
+        "Country": "USA",
+        "Awards": "1 nomination.",
+        "Poster": "https://m.media-amazon.com/images/M/MV5BMGVhYWRjNDYtYTc0OC00MjlhLWFlMDktODBkNGEyNjYxN2ZmXkEyXkFqcGdeQXVyNDgyODgxNjE@._V1_SX300.jpg",
+        "Ratings": [
+          {
+            "Source": "Internet Movie Database",
+            "Value": "6.5/10"
+          }
+        ],
+        "Metascore": "N/A",
+        "imdbRating": "6.5",
+        "imdbVotes": "1,034",
+        "imdbID": "tt0896522",
+        "Type": "movie",
+        "DVD": "N/A",
+        "BoxOffice": "N/A",
+        "Production": "N/A",
+        "Website": "N/A",
+        "Response": "True"
+      }
+    ],
+    "signupDate": "2025-11-28T16:26:26.142Z",
+    "__v": 4
   }
 ]
