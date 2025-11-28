@@ -11,6 +11,16 @@ const User = require("./modules/user");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ===============================
+// PASSWORD VALIDATION
+// ===============================
+function validatePassword(password) {
+    if (password.length < 8) throw "Password too short";
+    if (!/[A-Z]/.test(password)) throw "Password must have an uppercase letter";
+    if (!/[a-z]/.test(password)) throw "Password must have a lowercase letter";
+    if (!/\d/.test(password)) throw "Password must have a number";
+    if (!/[!@#$%^&*]/.test(password)) throw "Password must have a special character (!@#$%^&*)";
+}
 
 // Block access to JSON data files
 app.use((req, res, next) => {
@@ -48,10 +58,7 @@ async function sendSignupEmail(toEmail) {
         from: `"IsraTube" <${process.env.GMAIL_USER}>`,
         to: toEmail,
         subject: "Welcome to IsraTube!",
-        html: `
-            <h2>Welcome 🎉</h2>
-            <p>Thanks for signing up to IsraTube.</p>
-        `,
+        html: `<h2>Welcome 🎉</h2><p>Thanks for signing up to IsraTube.</p>`,
     };
 
     try {
@@ -80,16 +87,9 @@ async function syncUsersJson() {
 // ===============================
 // ROUTES (STATIC PAGES)
 // ===============================
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "..", "public", "index.html"));
-});
-app.get("/admin.html", (req, res) => {
-    res.sendFile(path.join(__dirname, "..", "public", "admin.html"));
-});
-app.get("/homepage.html", (req, res) => {
-    res.sendFile(path.join(__dirname, "..", "public", "homepage.html"));
-});
-
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "..", "public", "index.html")));
+app.get("/admin.html", (req, res) => res.sendFile(path.join(__dirname, "..", "public", "admin.html")));
+app.get("/homepage.html", (req, res) => res.sendFile(path.join(__dirname, "..", "public", "homepage.html")));
 
 // ===============================
 // FIRST-USER / ADMIN SETUP
@@ -103,6 +103,12 @@ app.post("/setup", async (req, res) => {
         const { email, password } = req.body;
         if (!email || !password)
             return res.status(400).json({ message: "Email and password required" });
+
+        try {
+            validatePassword(password); //validate password strength
+        } catch (err) {
+            return res.status(400).json({ message: err });
+        }
 
         const hashedPassword = await argon2.hash(password);
 
@@ -122,12 +128,6 @@ app.post("/setup", async (req, res) => {
     }
 });
 
-
-
-
-
-
-
 // ===============================
 // LOGIN
 // ===============================
@@ -139,7 +139,6 @@ app.post("/login", async (req, res) => {
         if (!email || !password)
             return res.status(400).json({ message: "Email and password required" });
 
-        // Admin shortcut
         if (email === "admin@admin" && password === "admin")
             return res.json({
                 role: "admin",
@@ -155,15 +154,9 @@ app.post("/login", async (req, res) => {
         if (!passwordMatch)
             return res.status(401).json({ message: "Incorrect password." });
 
-        const message = user.paid
-            ? "Login successful."
-            : "Login successful. Free trial 30 days.";
+        const message = user.paid ? "Login successful." : "Login successful. Free trial 30 days.";
 
-        res.json({
-            role: "user",
-            message,
-            redirect: "/homepage.html"
-        });
+        res.json({ role: "user", message, redirect: "/homepage.html" });
 
     } catch (err) {
         console.error("❌ Login error:", err);
@@ -185,6 +178,12 @@ app.post("/signup", async (req, res) => {
         if (password !== repeatPassword)
             return res.status(400).json({ message: "Passwords do not match" });
 
+        try {
+            validatePassword(password); // validate password strength
+        } catch (err) {
+            return res.status(400).json({ message: err });
+        }
+
         if (favArray.length > 50)
             return res.status(400).json({ message: "Too many favorite movies" });
 
@@ -200,9 +199,7 @@ app.post("/signup", async (req, res) => {
         await sendSignupEmail(email);
 
         res.status(201).json({
-            message: paid
-                ? "Signup successful."
-                : "Signup successful. Free trial 30 days."
+            message: paid ? "Signup successful." : "Signup successful. Free trial 30 days."
         });
 
     } catch (err) {
@@ -237,31 +234,27 @@ app.put("/api/users/:email", async (req, res) => {
         if (!user)
             return res.status(404).json({ error: "User not found" });
 
-        // Change email
         if (newEmail && newEmail !== user.email) {
             const exists = await User.findOne({ email: newEmail });
-            if (exists)
-                return res.status(409).json({ error: "Email already in use" });
-
+            if (exists) return res.status(409).json({ error: "Email already in use" });
             user.email = newEmail.toLowerCase();
         }
 
-        // Change password
-        if (newPassword)
+        if (newPassword) {
+            try { validatePassword(newPassword); } 
+            catch (err) { return res.status(400).json({ error: err }); }
             user.password = await argon2.hash(newPassword);
+        }
 
-        if (typeof newPaid === "boolean")
-            user.paid = newPaid;
+        if (typeof newPaid === "boolean") user.paid = newPaid;
 
         if (Array.isArray(newFavArray)) {
-            if (newFavArray.length > 50)
-                return res.status(400).json({ error: "Too many favorite movies" });
+            if (newFavArray.length > 50) return res.status(400).json({ error: "Too many favorite movies" });
             user.favArray = newFavArray;
         }
 
         await user.save();
         await syncUsersJson();
-
         res.json({ message: `User ${userEmail} updated.` });
 
     } catch (err) {
@@ -293,6 +286,4 @@ app.delete("/api/users/:email", async (req, res) => {
 // ===============================
 // START SERVER
 // ===============================
-app.listen(PORT, () => {
-    console.log(`🚀 Server running at http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
