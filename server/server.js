@@ -142,7 +142,7 @@ app.post("/login", async (req, res) => {
             return res.status(400).json({ message: "Email and password required" });
 
         // Hardcoded admin login
-        if (email === "admin@admin" && password === "admin") {
+        if (email === process.env.USER_ADMIN && password === process.env.PASSWORD_ADMIN) {
             return res.json({
                 role: "admin",
                 message: "Admin login successful",
