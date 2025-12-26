@@ -6,6 +6,8 @@ const cors = require("cors");
 const fs = require("fs");
 const argon2 = require("argon2");
 const nodemailer = require("nodemailer");
+const cookieParser = require("cookie-parser"); 
+const crypto = require("crypto"); 
 const User = require("./modules/user");
 
 const app = express();
@@ -22,6 +24,51 @@ function validatePassword(password) {
     if (!/[!@#$%^&*]/.test(password)) throw "Password must have a special character (!@#$%^&*)";
 }
 
+// ===============================
+// CSRF PROTECTION
+// ===============================
+function generateCSRFToken() {
+    return crypto.randomBytes(32).toString("hex");
+}
+
+function csrfTokenMiddleware(req, res, next) {
+    if (["GET", "HEAD", "OPTIONS"].includes(req.method)) {
+        // Only generate a new token if one doesn't exist
+        const existingToken = req.cookies["XSRF-TOKEN"];
+        if (!existingToken) {
+            const token = generateCSRFToken();
+            res.cookie("XSRF-TOKEN", token, {
+                httpOnly: false,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+                maxAge: 24 * 60 * 60 * 1000
+            });
+        }
+    }
+    next();
+}
+
+function validateCSRFToken(req, res, next) {
+    if (["GET", "HEAD", "OPTIONS"].includes(req.method)) {
+        return next();
+    }
+
+    const cookieToken = req.cookies["XSRF-TOKEN"];
+    const headerToken = req.headers["x-xsrf-token"];
+
+    if (!cookieToken || !headerToken) {
+        console.log("❌ CSRF token missing - Cookie:", !!cookieToken, "Header:", !!headerToken);
+        return res.status(403).json({ message: "CSRF token missing" });
+    }
+
+    if (cookieToken !== headerToken) {
+        console.log("❌ CSRF token mismatch");
+        return res.status(403).json({ message: "CSRF token mismatch" });
+    }
+
+    next();
+}
+
 // Block access to JSON data files
 app.use((req, res, next) => {
     if (req.url.endsWith(".json")) return res.status(403).send("Access Denied");
@@ -30,6 +77,8 @@ app.use((req, res, next) => {
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
+app.use(csrfTokenMiddleware);
 app.use(express.static(path.join(__dirname, "..", "public")));
 
 // ===============================
@@ -94,7 +143,7 @@ app.get("/homepage.html", (req, res) => res.sendFile(path.join(__dirname, "..", 
 // ===============================
 // FIRST-USER / ADMIN SETUP
 // ===============================
-app.post("/setup", async (req, res) => {
+app.post("/setup", validateCSRFToken, async (req, res) => {
     try {
         const userCount = await User.countDocuments();
         if (userCount > 0)
@@ -105,7 +154,7 @@ app.post("/setup", async (req, res) => {
             return res.status(400).json({ message: "Email and password required" });
 
         try {
-            validatePassword(password); //validate password strength
+            validatePassword(password);
         } catch (err) {
             return res.status(400).json({ message: err });
         }
@@ -131,13 +180,11 @@ app.post("/setup", async (req, res) => {
 // ===============================
 // LOGIN
 // ===============================
-
-app.post("/login", async (req, res) => {
+app.post("/login", validateCSRFToken, async (req, res) => {
     try {
         let { email, password } = req.body;
         if (email) email = email.toLowerCase();
 
-        // Check if both email and password are provided
         if (!email || !password)
             return res.status(400).json({ message: "Email and password required" });
 
@@ -150,41 +197,33 @@ app.post("/login", async (req, res) => {
             });
         }
 
-        // Find user by email
         const user = await User.findOne({ email });
         if (!user)
             return res.status(404).json({ message: "User not found. Please signup." });
 
-        // Check if the account is currently locked
         if (user.lockUntil && user.lockUntil > Date.now()) {
             return res.status(403).json({ message: "Account locked. Try later." });
         }
 
-        // Verify the password using argon2
         const passwordMatch = await argon2.verify(user.password, password);
 
         if (!passwordMatch) {
-            // Increment failed login attempts
             user.failedAttempts = (user.failedAttempts || 0) + 1;
 
-            // Lock account after 5 failed attempts
             if (user.failedAttempts >= 5) {
-                user.lockUntil = Date.now() + 10 * 60 * 1000; // lock for 10 minutes
+                user.lockUntil = Date.now() + 10 * 60 * 1000;
                 await user.save();
                 return res.status(403).json({ message: "Account locked due to too many failed attempts. Try in 10 minutes." });
             }
 
-            // Save updated failedAttempts count
             await user.save();
             return res.status(401).json({ message: "Incorrect password." });
         }
 
-        // Successful login → reset failedAttempts and lockUntil
         user.failedAttempts = 0;
         user.lockUntil = null;
         await user.save();
 
-        // Respond with user role and redirect page
         const message = user.paid ? "Login successful." : "Login successful. Free trial 30 days.";
         res.json({ role: "user", message, redirect: "/homepage.html" });
 
@@ -194,12 +233,10 @@ app.post("/login", async (req, res) => {
     }
 });
 
-
-
 // ===============================
 // SIGNUP
 // ===============================
-app.post("/signup", async (req, res) => {
+app.post("/signup", validateCSRFToken, async (req, res) => {
     try {
         let { email, password, repeatPassword, paid, favArray = [] } = req.body;
         if (email) email = email.toLowerCase();
@@ -211,7 +248,7 @@ app.post("/signup", async (req, res) => {
             return res.status(400).json({ message: "Passwords do not match" });
 
         try {
-            validatePassword(password); // validate password strength
+            validatePassword(password);
         } catch (err) {
             return res.status(400).json({ message: err });
         }
@@ -244,6 +281,7 @@ app.post("/signup", async (req, res) => {
 // GET ALL USERS (ADMIN)
 // ===============================
 app.get("/api/users", async (req, res) => {
+    console.log("📋 GET /api/users called");
     try {
         const users = await User.find().lean();
         await syncUsersJson();
@@ -257,7 +295,7 @@ app.get("/api/users", async (req, res) => {
 // ===============================
 // UPDATE USER
 // ===============================
-app.put("/api/users/:email", async (req, res) => {
+app.put("/api/users/:email", validateCSRFToken, async (req, res) => {
     try {
         const userEmail = decodeURIComponent(req.params.email).toLowerCase();
         const { newEmail, newPassword, newPaid, newFavArray } = req.body;
@@ -298,7 +336,7 @@ app.put("/api/users/:email", async (req, res) => {
 // ===============================
 // DELETE USER
 // ===============================
-app.delete("/api/users/:email", async (req, res) => {
+app.delete("/api/users/:email", validateCSRFToken, async (req, res) => {
     try {
         const userEmail = decodeURIComponent(req.params.email).toLowerCase();
         const removed = await User.findOneAndDelete({ email: userEmail });

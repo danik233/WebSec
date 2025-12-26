@@ -1,4 +1,13 @@
 // syncFavorites.js
+
+// Add CSRF helper
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+}
+
 (async function syncFavoritesImmediately() {
     const email = sessionStorage.getItem("email");
     const localFavs = JSON.parse(localStorage.getItem("favorites") || "[]");
@@ -9,7 +18,8 @@
         const res = await fetch(`/api/users/${encodeURIComponent(email)}`, {
             method: "PUT",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "X-XSRF-TOKEN": getCookie("XSRF-TOKEN") // ADD THIS
             },
             body: JSON.stringify({ newFavArray: localFavs })
         });

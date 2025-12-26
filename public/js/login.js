@@ -1,3 +1,16 @@
+// ===============================
+// CSRF HELPER FUNCTION
+// ===============================
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+}
+
+// ===============================
+// LOGIN.JS
+// ===============================
 const loginBtn = document.getElementById("loginBtn");
 
 async function handleLogin() {
@@ -16,7 +29,8 @@ async function handleLogin() {
         const response = await fetch("/login", {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "X-XSRF-TOKEN": getCookie("XSRF-TOKEN") // ADD THIS LINE
             },
             body: JSON.stringify({ email, password })
         });
@@ -34,7 +48,7 @@ async function handleLogin() {
         alert(data.message || "Login successful.");
 
         if (data.redirect) {
-            await syncLocalFavoritesToMongo(email);  // 🔄 Sync localStorage to MongoDB
+            await syncLocalFavoritesToMongo(email);
             window.location.href = data.redirect;
         }
 
@@ -69,7 +83,8 @@ async function syncLocalFavoritesToMongo(email) {
         const res = await fetch(`/api/users/${encodeURIComponent(email)}`, {
             method: 'PUT',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                "X-XSRF-TOKEN": getCookie("XSRF-TOKEN") // ADD THIS LINE
             },
             body: JSON.stringify({ newFavArray: favorites })
         });
@@ -85,33 +100,6 @@ async function syncLocalFavoritesToMongo(email) {
     }
 }
 
-// ✅ Forgot Password Feature
-// document.getElementById("forgotPasswordBtn").addEventListener("click", async () => {
-//     const email = prompt("Enter your registered email:");
-//     if (!email) return alert("Email is required.");
-
-//     const newPassword = prompt("Enter your new password:");
-//     if (!newPassword) return alert("New password is required.");
-
-//     try {
-//         const res = await fetch(`/api/users/${encodeURIComponent(email.trim().toLowerCase())}`, {
-//             method: "PUT",
-//             headers: { "Content-Type": "application/json" },
-//             body: JSON.stringify({ newPassword })
-//         });
-
-//         const data = await res.json();
-//         if (res.ok) {
-//             alert("✅ Password changed successfully. You can now login with your new password.");
-//         } else {
-//             alert("❌ " + (data.message || "Failed to change password."));
-//         }
-//     } catch (err) {
-//         console.error("❌ Forgot password error:", err);
-//         alert("Server error. Please try again later.");
-//     }
-// });
-
 const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
 const editModal = document.getElementById("editModal");
 const closeModalBtn = document.getElementById("closeModal");
@@ -120,7 +108,6 @@ const editStatus = document.getElementById("editStatus");
 
 // Open modal on forgot password button click
 forgotPasswordBtn.addEventListener("click", () => {
-    // Clear form and status
     editForm.reset();
     editStatus.textContent = "";
     editModal.style.display = "block";
@@ -159,7 +146,10 @@ editForm.addEventListener("submit", async (event) => {
     try {
         const res = await fetch(`/api/users/${encodeURIComponent(email)}`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "X-XSRF-TOKEN": getCookie("XSRF-TOKEN") // ADD THIS LINE
+            },
             body: JSON.stringify({ newPassword })
         });
 
@@ -167,7 +157,6 @@ editForm.addEventListener("submit", async (event) => {
 
         if (res.ok) {
             editStatus.textContent = "✅ Password changed successfully. You can now login with your new password.";
-            // Optionally close modal after a delay
             setTimeout(() => {
                 editModal.style.display = "none";
             }, 2500);

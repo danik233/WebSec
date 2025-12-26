@@ -1,8 +1,16 @@
 const favContainer = document.getElementById('favoritesList');
 let favorites = [];
 
+// ADD CSRF HELPER FUNCTION
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+}
+
 window.addEventListener('load', () => {
-  applyDarkMode(); // Apply dark mode first
+  applyDarkMode();
 
   const stored = localStorage.getItem('favorites');
   if (stored) {
@@ -64,7 +72,6 @@ function renderFavorites() {
   });
 }
 
-// Remove favorite and sync immediately
 function removeFavorite(id) {
   favorites = favorites.filter(m => m.imdbID !== id);
   localStorage.setItem('favorites', JSON.stringify(favorites));
@@ -72,16 +79,17 @@ function removeFavorite(id) {
   syncFavoritesToMongo();
 }
 
-// Sync local favorites to MongoDB for logged-in user
+// ADD CSRF TOKEN HERE
 async function syncFavoritesToMongo() {
   const email = sessionStorage.getItem("email");
-  if (!email) return;  // No logged-in user
+  if (!email) return;
 
   try {
     const res = await fetch(`/api/users/${encodeURIComponent(email)}`, {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "X-XSRF-TOKEN": getCookie("XSRF-TOKEN") // ADD THIS LINE
       },
       body: JSON.stringify({ newFavArray: favorites })
     });

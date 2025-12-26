@@ -1,3 +1,15 @@
+// ===============================
+// routerIMDB.js - FOR PAGES WITH FAVORITES
+// ===============================
+
+// CSRF HELPER FUNCTION
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+}
+
 let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
 
 async function syncFavoritesToMongo() {
@@ -11,11 +23,10 @@ async function syncFavoritesToMongo() {
         const res = await fetch(`/api/users/${encodeURIComponent(email)}`, {
             method: 'PUT',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
             },
-            body: JSON.stringify({
-                newFavArray: favorites
-            })
+            body: JSON.stringify({ newFavArray: favorites })
         });
 
         const data = await res.json();

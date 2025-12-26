@@ -1,3 +1,15 @@
+// ===============================
+// get-users.js - FOR ADMIN PAGE ONLY
+// ===============================
+
+// CSRF HELPER FUNCTION
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+}
+
 // Helper to format date or show "N/A"
 function formatDate(date) {
     if (!date) return "N/A";
@@ -5,12 +17,22 @@ function formatDate(date) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+    // CHECK IF WE'RE ON THE ADMIN PAGE
+    const table = document.querySelector("table");
+    if (!table) {
+        console.log("Not on admin page, skipping user load");
+        return;
+    }
+
     try {
-        const res = await fetch("/api/users");
+        const res = await fetch("/api/users", {
+            headers: {
+                "X-XSRF-TOKEN": getCookie("XSRF-TOKEN") || ""
+            }
+        });
         if (!res.ok) throw new Error("Failed to fetch users");
 
         const users = await res.json();
-        const table = document.querySelector("table");
 
         // Clear all previous rows except header
         document.querySelectorAll("tr:not(:first-child)").forEach(r => r.remove());
@@ -48,11 +70,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             let endDate = "N/A";
             if (user.signupDate && user.paid === false) {
                 const signup = new Date(user.signupDate);
-                const trialEnd = new Date(signup.getTime() + 30 * 24 * 60 * 60 * 1000); // +30 days
+                const trialEnd = new Date(signup.getTime() + 30 * 24 * 60 * 60 * 1000);
                 endDate = formatDate(trialEnd);
             }
 
-            // Add one more <td> for END date
             row.innerHTML = `
                 <td>${user.email}</td>
                 <td>${user.paid ? "✅" : "❌"}</td>
@@ -74,13 +95,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-// Delete user (no changes)
 async function deleteUser(email) {
     if (!confirm(`Delete ${email}?`)) return;
 
     try {
         const res = await fetch(`/api/users/${encodeURIComponent(email)}`, {
-            method: "DELETE"
+            method: "DELETE",
+            headers: {
+                "X-XSRF-TOKEN": getCookie("XSRF-TOKEN")
+            }
         });
         const data = await res.json();
         alert(data.message);
@@ -91,71 +114,77 @@ async function deleteUser(email) {
     }
 }
 
-// Update user WITHOUT changing paid status (no changes)
 let currentEditingEmail = null;
 
 function changeUser(email) {
     currentEditingEmail = email;
-
-    // Pre-fill modal fields
-    document.getElementById("modalEmail").value = email;
-    document.getElementById("modalPassword").value = "";
-
-    // Show modal
-    document.getElementById("editModal").style.display = "block";
+    const modalEmail = document.getElementById("modalEmail");
+    const modalPassword = document.getElementById("modalPassword");
+    const editModal = document.getElementById("editModal");
+    
+    if (modalEmail) modalEmail.value = email;
+    if (modalPassword) modalPassword.value = "";
+    if (editModal) editModal.style.display = "block";
 }
 
-// Handle modal close
-document.getElementById("closeModal").onclick = () => {
-    document.getElementById("editModal").style.display = "none";
-    document.getElementById("editStatus").textContent = "";
-};
-
-// Handle form submission
-document.getElementById("editForm").onsubmit = async (e) => {
-    e.preventDefault();
-
-    const newEmail = document.getElementById("modalEmail").value.trim();
-    const newPassword = document.getElementById("modalPassword").value.trim();
-
-    // Enforce password requirement
-    if (!newPassword) {
-        document.getElementById("editStatus").textContent = "❌ Password is required to update email.";
-        return;
-    }
-
-    const updatePayload = {
-        newEmail,
-        newPassword
+// Safe event listeners - only add if elements exist
+const closeModal = document.getElementById("closeModal");
+if (closeModal) {
+    closeModal.onclick = () => {
+        const editModal = document.getElementById("editModal");
+        const editStatus = document.getElementById("editStatus");
+        if (editModal) editModal.style.display = "none";
+        if (editStatus) editStatus.textContent = "";
     };
+}
 
-    try {
-        const res = await fetch(`/api/users/${encodeURIComponent(currentEditingEmail)}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(updatePayload)
-        });
+const editForm = document.getElementById("editForm");
+if (editForm) {
+    editForm.onsubmit = async (e) => {
+        e.preventDefault();
 
-        const data = await res.json();
+        const newEmail = document.getElementById("modalEmail").value.trim();
+        const newPassword = document.getElementById("modalPassword").value.trim();
+        const editStatus = document.getElementById("editStatus");
 
-        if (!res.ok) {
-            document.getElementById("editStatus").textContent = "❌ " + (data.error || data.message);
+        if (!newPassword) {
+            if (editStatus) editStatus.textContent = "❌ Password is required to update email.";
             return;
         }
 
-        document.getElementById("editStatus").textContent = "✅ " + data.message;
-        setTimeout(() => location.reload(), 1000);
-    } catch (err) {
-        console.error("❌ Update error:", err);
-        document.getElementById("editStatus").textContent = "Failed to update user.";
-    }
-};
+        const updatePayload = { newEmail, newPassword };
 
-// Close modal on outside click
+        try {
+            const res = await fetch(`/api/users/${encodeURIComponent(currentEditingEmail)}`, {
+                method: "PUT",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "X-XSRF-TOKEN": getCookie("XSRF-TOKEN")
+                },
+                body: JSON.stringify(updatePayload)
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                if (editStatus) editStatus.textContent = "❌ " + (data.error || data.message);
+                return;
+            }
+
+            if (editStatus) editStatus.textContent = "✅ " + data.message;
+            setTimeout(() => location.reload(), 1000);
+        } catch (err) {
+            console.error("❌ Update error:", err);
+            if (editStatus) editStatus.textContent = "Failed to update user.";
+        }
+    };
+}
+
 window.onclick = (event) => {
     const modal = document.getElementById("editModal");
-    if (event.target === modal) {
+    if (modal && event.target === modal) {
         modal.style.display = "none";
-        document.getElementById("editStatus").textContent = "";
+        const editStatus = document.getElementById("editStatus");
+        if (editStatus) editStatus.textContent = "";
     }
 };
