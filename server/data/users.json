@@ -1,8 +1,8 @@
 [
   {
     "_id": "691e06ca814df9c81d65f1b3",
-    "email": "dzirkiev95@gmail.com",
-    "password": "$argon2id$v=19$m=65536,t=3,p=4$QeABr/FW7MDPPr+PwaGgng$mpVFHcYk6VF2WUoWn4vhU/WhogcVKMtCse8nshYzURs",
+    "email": "dzirkiev9@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$I520pDNGJ7hur5zBqQOlng$Sbjw5UWS/Q7P7UYvsMR+KALQQHNdCAPP+LZk3GE0B1s",
     "paid": true,
     "favArray": [
       {
@@ -204,5 +204,138 @@
     "lockUntil": null,
     "signupDate": "2025-12-05T15:24:27.042Z",
     "__v": 0
+  },
+  {
+    "_id": "6958240cf692936b5e077eb2",
+    "email": "dzirkiev95@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$XdK9tRH2XsXpmcaY/KOuNg$VM1HPVSX7VclXsvYATMtFystpct9hb9IYWMkHScWF3Q",
+    "paid": true,
+    "role": "USER",
+    "favArray": [
+      {
+        "Title": "Hell Fest",
+        "Year": "2018",
+        "Rated": "R",
+        "Released": "28 Sep 2018",
+        "Runtime": "89 min",
+        "Genre": "Horror, Mystery, Thriller",
+        "Director": "Gregory Plotkin",
+        "Writer": "Seth M. Sherwood, Blair Butler, Akela Cooper",
+        "Actors": "Cynthea Mercado, Stephen Conroy, Amy Forsyth",
+        "Plot": "A masked serial killer turns a horror-themed amusement park into his own personal playground, terrorizing a group of friends while the rest of the patrons believe that it is all part of the show.",
+        "Language": "English",
+        "Country": "United States",
+        "Awards": "1 win total",
+        "Poster": "https://m.media-amazon.com/images/M/MV5BOGFkMWM5MmEtZjY4YS00MmFhLWEyOWQtNTcwYmRlYmZkMzU3XkEyXkFqcGc@._V1_SX300.jpg",
+        "Ratings": [
+          {
+            "Source": "Internet Movie Database",
+            "Value": "5.5/10"
+          },
+          {
+            "Source": "Rotten Tomatoes",
+            "Value": "41%"
+          },
+          {
+            "Source": "Metacritic",
+            "Value": "26/100"
+          }
+        ],
+        "Metascore": "26",
+        "imdbRating": "5.5",
+        "imdbVotes": "20,518",
+        "imdbID": "tt1999890",
+        "Type": "movie",
+        "DVD": "N/A",
+        "BoxOffice": "$11,107,431",
+        "Production": "N/A",
+        "Website": "N/A",
+        "Response": "True"
+      },
+      {
+        "Title": "Ted",
+        "Year": "2012",
+        "Rated": "R",
+        "Released": "29 Jun 2012",
+        "Runtime": "106 min",
+        "Genre": "Comedy",
+        "Director": "Seth MacFarlane",
+        "Writer": "Seth MacFarlane, Alec Sulkin, Wellesley Wild",
+        "Actors": "Mark Wahlberg, Mila Kunis, Seth MacFarlane",
+        "Plot": "John Bennett, a man whose childhood wish of bringing his teddy bear to life came true, now must decide between keeping the relationship with the bear, Ted or his girlfriend, Lori.",
+        "Language": "English, Japanese, Ukrainian",
+        "Country": "United States",
+        "Awards": "Nominated for 1 Oscar. 13 wins & 28 nominations total",
+        "Poster": "https://m.media-amazon.com/images/M/MV5BMTQ1OTU0ODcxMV5BMl5BanBnXkFtZTcwOTMxNTUwOA@@._V1_SX300.jpg",
+        "Ratings": [
+          {
+            "Source": "Internet Movie Database",
+            "Value": "6.9/10"
+          },
+          {
+            "Source": "Rotten Tomatoes",
+            "Value": "69%"
+          },
+          {
+            "Source": "Metacritic",
+            "Value": "62/100"
+          }
+        ],
+        "Metascore": "62",
+        "imdbRating": "6.9",
+        "imdbVotes": "695,086",
+        "imdbID": "tt1637725",
+        "Type": "movie",
+        "DVD": "N/A",
+        "BoxOffice": "$218,815,487",
+        "Production": "N/A",
+        "Website": "N/A",
+        "Response": "True"
+      },
+      {
+        "Title": "Ted 2",
+        "Year": "2015",
+        "Rated": "R",
+        "Released": "26 Jun 2015",
+        "Runtime": "115 min",
+        "Genre": "Comedy",
+        "Director": "Seth MacFarlane",
+        "Writer": "Seth MacFarlane, Alec Sulkin, Wellesley Wild",
+        "Actors": "Mark Wahlberg, Seth MacFarlane, Amanda Seyfried",
+        "Plot": "Newlywed couple Ted and Tami-Lynn want to have a baby, but in order to qualify to be a parent, Ted will have to prove he's a person in a court of law.",
+        "Language": "English, Ukrainian",
+        "Country": "United States",
+        "Awards": "3 wins & 4 nominations total",
+        "Poster": "https://m.media-amazon.com/images/M/MV5BMjEwMDg3MDk1NF5BMl5BanBnXkFtZTgwNjYyODA1NTE@._V1_SX300.jpg",
+        "Ratings": [
+          {
+            "Source": "Internet Movie Database",
+            "Value": "6.3/10"
+          },
+          {
+            "Source": "Rotten Tomatoes",
+            "Value": "45%"
+          },
+          {
+            "Source": "Metacritic",
+            "Value": "48/100"
+          }
+        ],
+        "Metascore": "48",
+        "imdbRating": "6.3",
+        "imdbVotes": "253,831",
+        "imdbID": "tt2637276",
+        "Type": "movie",
+        "DVD": "N/A",
+        "BoxOffice": "$81,476,385",
+        "Production": "N/A",
+        "Website": "N/A",
+        "Response": "True"
+      }
+    ],
+    "failedAttempts": 0,
+    "lockUntil": null,
+    "signupDate": "2026-01-02T20:01:16.631Z",
+    "__v": 4
   }
 ]

@@ -12,14 +12,17 @@ function getCookie(name) {
     const email = sessionStorage.getItem("email");
     const localFavs = JSON.parse(localStorage.getItem("favorites") || "[]");
 
-    if (!email || !localFavs.length) return;
+    // Skip sync for hardcoded admin or no user
+    if (!email || email === "admin@admin" || !localFavs.length) {
+        return;
+    }
 
     try {
         const res = await fetch(`/api/users/${encodeURIComponent(email)}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                "X-XSRF-TOKEN": getCookie("XSRF-TOKEN") // ADD THIS
+                "X-XSRF-TOKEN": getCookie("XSRF-TOKEN")
             },
             body: JSON.stringify({ newFavArray: localFavs })
         });

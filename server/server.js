@@ -9,6 +9,7 @@ const nodemailer = require("nodemailer");
 const cookieParser = require("cookie-parser"); 
 const crypto = require("crypto"); 
 const User = require("./modules/user");
+const uploadRoutes = require("./routes/upload.routes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -80,6 +81,20 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(csrfTokenMiddleware);
 app.use(express.static(path.join(__dirname, "..", "public")));
+
+// ===============================
+// FILE UPLOAD - Ensure upload directory exists
+// ===============================
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true, mode: 0o755 });
+    console.log("📁 Created uploads directory");
+}
+
+// ===============================
+// FILE UPLOAD ROUTES
+// ===============================
+app.use("/api/upload", validateCSRFToken, uploadRoutes);
 
 // ===============================
 // CONNECT TO MONGODB

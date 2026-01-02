@@ -1,4 +1,14 @@
 // ===============================
+// CSRF HELPER FUNCTION
+// ===============================
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+}
+
+// ===============================
 // SIGNUP.JS
 // ===============================
 const signupBtn = document.getElementById("signupBtn");
@@ -61,7 +71,7 @@ async function handleSignup() {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",
-                "X-XSRF-TOKEN": getCookie("XSRF-TOKEN") // ADD THIS LINE
+                "X-XSRF-TOKEN": getCookie("XSRF-TOKEN")
             },
             body: JSON.stringify({ email, password, repeatPassword, paid: paidStatus, favArray: [] }),
         });

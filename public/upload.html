@@ -1,0 +1,331 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/loading.css">
+    <link href="https://fonts.googleapis.com/css2?family=Krona+One&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Upload - IsraTube</title>
+    <style>
+        .upload-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .upload-container h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .upload-box {
+            border: 3px dashed #ddd;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin: 30px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-box:hover {
+            border-color: #F5C518;
+            background: #fffef0;
+        }
+
+        .upload-box.has-file {
+            border-color: #4ECDC4;
+            background: #f0ffff;
+        }
+
+        .form-field {
+            margin: 20px 0;
+        }
+
+        .form-field label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-field input,
+        .form-field select,
+        .form-field textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .upload-btn {
+            width: 100%;
+            padding: 15px;
+            background: #F5C518;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .upload-btn:hover {
+            background: #e8b200;
+        }
+
+        .upload-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .file-info {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            display: none;
+        }
+
+        body.dark-mode .upload-container {
+            background: #2a2a2a;
+        }
+
+        body.dark-mode .upload-container h1,
+        body.dark-mode .form-field label {
+            color: white;
+        }
+
+        body.dark-mode .upload-box {
+            border-color: #555;
+            background: #1a1a1a;
+        }
+
+        body.dark-mode .form-field input,
+        body.dark-mode .form-field select,
+        body.dark-mode .form-field textarea {
+            background: #1a1a1a;
+            border-color: #555;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <section id="loading-screen">
+            <section class="loader"></section>
+            <p>Loading, please wait...</p>
+        </section>
+
+        <section class="buttonANDlogo">
+            <input id="burgerBtn" type="button" value="☰" alt="menu"
+                style="width: 45px; height: 45px; font-size: 35px; background-color: transparent; border: none;">
+            <a href="homepage.html">
+                <p id="israTubeText">IsraTube</p>
+            </a>
+        </section>
+
+        <section class="searchSystem">
+            <input id="searchText" type="text" placeholder="Search">
+            <input id="keyboardIcon" type="image" src="images/KeyBoard.png" alt="keyBoard" width="30" height="30">
+            <input id="searchIcon" type="image" src="images/Search.png" alt="search" width="20" height="20">
+        </section>
+
+        <section class="loginSystem">
+            <input id="moonDark" type="image" src="images/moonWhiteIcon.png" alt="darkmode" width="45" height="45">
+            <section id="profileArea">
+                <input id="profileIcon" type="image" src="images/profileIcon.png" alt="profile">
+                <a href="index.html" id="logoutLink">Logout</a>
+            </section>
+        </section>
+    </header>
+
+    <aside id="sidebar" class="open">
+        <ul>
+            <li><a href="homepage.html"><img src="images/HomeIcon.png" alt="homeIcon">
+                    <p>Home</p>
+                </a></li>
+            <li><a href="TvOnline.html"><img src="images/TVOnline 1.png" alt="tvIcon">
+                    <p>TV Online</p>
+                </a></li>
+            <li><a href="Movies.html"><img src="images/MovieIcon.png" alt="movieIcon">
+                    <p>Movies</p>
+                </a></li>
+            <li><a href="Songs.html"><img src="images/Music-Music-icon 1.png" alt="musicIcon">
+                    <p>Songs</p>
+                </a></li>
+            <li class="activePage"><a href="upload.html"><img src="images/MovieIcon.png" alt="uploadIcon">
+                    <p>Upload</p>
+                </a></li>
+            <li><a href="myuploads.html"><img src="images/MovieIcon.png" alt="myuploadsIcon">
+                    <p>My Uploads</p>
+                </a></li>
+            <li><a href="About.html"><img src="images/AboutUs.jpg" alt="aboutIcon">
+                    <p>About</p>
+                </a></li>
+        </ul>
+    </aside>
+
+    <main>
+        <section class="mainWrap">
+            <div class="upload-container">
+                <h1>📤 Upload Content</h1>
+
+                <div class="upload-box" id="uploadBox">
+                    <p style="font-size: 3em; margin-bottom: 10px;">📁</p>
+                    <p><strong>Click here to select a file</strong></p>
+                    <p style="font-size: 0.9em; color: #666; margin-top: 10px;">JPG, PNG, GIF, PDF, TXT, ZIP (Max 10MB)
+                    </p>
+                    <input type="file" id="fileInput" style="display: none;" accept="image/*,.pdf,.txt,.zip">
+                </div>
+
+                <div id="fileInfo" class="file-info"></div>
+
+                <div class="form-field">
+                    <label for="titleInput">Title *</label>
+                    <input type="text" id="titleInput" placeholder="Enter title" required>
+                </div>
+
+                <div class="form-field">
+                    <label for="categoryInput">Category</label>
+                    <select id="categoryInput">
+                        <option value="movie">Movie</option>
+                        <option value="song">Song</option>
+                        <option value="tv">TV Show</option>
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label for="descriptionInput">Description</label>
+                    <textarea id="descriptionInput" rows="3" placeholder="Optional description"></textarea>
+                </div>
+
+                <button class="upload-btn" id="uploadBtn">Upload File</button>
+
+                <div id="result" class="result"></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/home.js"></script>
+    <script src="js/loading.js"></script>
+    <script>
+        console.log('Upload page loaded');
+
+        let selectedFile = null;
+        const uploadBox = document.getElementById('uploadBox');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const resultDiv = document.getElementById('result');
+
+        // Click to select file
+        uploadBox.addEventListener('click', () => {
+            console.log('Upload box clicked');
+            fileInput.click();
+        });
+
+        // File selected
+        fileInput.addEventListener('change', (e) => {
+            console.log('File selected:', e.target.files[0]);
+            if (e.target.files[0]) {
+                selectedFile = e.target.files[0];
+                fileInfo.textContent = `📎 Selected: ${selectedFile.name} (${formatBytes(selectedFile.size)})`;
+                fileInfo.style.display = 'block';
+                uploadBox.classList.add('has-file');
+            }
+        });
+
+        // Upload button
+        uploadBtn.addEventListener('click', async () => {
+            console.log('Upload button clicked');
+
+            if (!selectedFile) {
+                showResult('Please select a file first', 'error');
+                return;
+            }
+
+            const title = document.getElementById('titleInput').value.trim();
+            if (!title) {
+                showResult('Please enter a title', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Uploading...';
+
+            try {
+                const csrfToken = document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1];
+
+                const response = await fetch('/api/upload/single', {
+                    method: 'POST',
+                    headers: { 'X-XSRF-TOKEN': csrfToken },
+                    body: formData
+                });
+
+                const data = await response.json();
+                console.log('Upload response:', data);
+
+                if (data.success) {
+                    showResult(`✅ Upload successful! File ID: ${data.file.id}`, 'success');
+                    setTimeout(() => window.location.href = 'myuploads.html', 2000);
+                } else {
+                    showResult('❌ ' + data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showResult('❌ Upload failed: ' + error.message, 'error');
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload File';
+            }
+        });
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function showResult(message, type) {
+            resultDiv.className = `result ${type} show`;
+            resultDiv.textContent = message;
+        }
+    </script>
+</body>
+
+</html>

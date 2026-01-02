@@ -12,11 +12,15 @@
   "dependencies": {
     "argon2": "^0.44.0",
     "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "dotenv": "^17.0.1",
-    "express": "^5.1.0",
-    "mongoose": "^8.16.1",
-    "nodemailer": "^7.0.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "file-type": "^21.2.0",
+    "mongoose": "^8.21.0",
+    "multer": "^2.0.2",
+    "nodemailer": "^7.0.12",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

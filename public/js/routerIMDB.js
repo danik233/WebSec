@@ -14,8 +14,10 @@ let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
 
 async function syncFavoritesToMongo() {
     const email = sessionStorage.getItem('email');
-    if (!email) {
-        console.warn("No user is logged in. Cannot sync favorites.");
+    
+    // Skip sync for hardcoded admin or no user
+    if (!email || email === 'admin@admin') {
+        console.warn("Skipping sync for admin or no user logged in.");
         return;
     }
 
