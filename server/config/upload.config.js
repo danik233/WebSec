@@ -11,6 +11,9 @@ module.exports = {
   maxRequestSize: parseInt(process.env.MAX_REQUEST_SIZE) || 30 * 1024 * 1024, // 30MB
   maxFilesPerRequest: parseInt(process.env.MAX_FILES_PER_REQUEST) || 3,
   
+  // SSRF Protection - URL upload limits
+  maxUploadBytesFromUrl: parseInt(process.env.MAX_UPLOAD_BYTES) || 10 * 1024 * 1024, // 10MB
+  
   // Allowed file types with their magic bytes
   allowedTypes: {
     'pdf': { 
