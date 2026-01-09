@@ -206,10 +206,10 @@
     "__v": 0
   },
   {
-    "_id": "6958240cf692936b5e077eb2",
+    "_id": "69612887f2d0cc57f61ac52f",
     "email": "dzirkiev95@gmail.com",
-    "password": "$argon2id$v=19$m=65536,t=3,p=4$XdK9tRH2XsXpmcaY/KOuNg$VM1HPVSX7VclXsvYATMtFystpct9hb9IYWMkHScWF3Q",
-    "paid": true,
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$EXYKkiXb7NprDkBsNka8BQ$96QQ8tLbOlcLYsnfUB5Ze+WR0/Kccpmc5V03tXiVDDE",
+    "paid": false,
     "role": "USER",
     "favArray": [
       {
@@ -335,7 +335,7 @@
     ],
     "failedAttempts": 0,
     "lockUntil": null,
-    "signupDate": "2026-01-02T20:01:16.631Z",
-    "__v": 4
+    "signupDate": "2026-01-09T16:10:47.725Z",
+    "__v": 1
   }
 ]

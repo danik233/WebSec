@@ -8,6 +8,8 @@ const argon2 = require("argon2");
 const nodemailer = require("nodemailer");
 const cookieParser = require("cookie-parser"); 
 const crypto = require("crypto"); 
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger.config');
 const User = require("./modules/user");
 const uploadRoutes = require("./routes/upload.routes");
 
@@ -34,7 +36,6 @@ function generateCSRFToken() {
 
 function csrfTokenMiddleware(req, res, next) {
     if (["GET", "HEAD", "OPTIONS"].includes(req.method)) {
-        // Only generate a new token if one doesn't exist
         const existingToken = req.cookies["XSRF-TOKEN"];
         if (!existingToken) {
             const token = generateCSRFToken();
@@ -81,6 +82,24 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(csrfTokenMiddleware);
 app.use(express.static(path.join(__dirname, "..", "public")));
+
+// ===============================
+// SWAGGER CONFIGURATION
+// ===============================
+// CRITICAL: Only expose Swagger in development
+if (process.env.NODE_ENV !== 'production') {
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+        explorer: true,
+        customCss: '.swagger-ui .topbar { display: none }',
+        customSiteTitle: "IsraTube API Docs"
+    }));
+    console.log(`📚 Swagger UI available at http://localhost:${PORT}/api-docs`);
+} else {
+    // In production, block Swagger completely
+    app.use('/api-docs', (req, res) => {
+        res.status(404).send('Not Found');
+    });
+}
 
 // ===============================
 // FILE UPLOAD - Ensure upload directory exists
@@ -133,7 +152,6 @@ async function sendSignupEmail(toEmail) {
     }
 }
 
-// OPTIONAL: Sync db → JSON backup
 async function syncUsersJson() {
     try {
         const users = await User.find().lean();
@@ -158,6 +176,52 @@ app.get("/homepage.html", (req, res) => res.sendFile(path.join(__dirname, "..", 
 // ===============================
 // FIRST-USER / ADMIN SETUP
 // ===============================
+/**
+ * @swagger
+ * /setup:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Create the first admin account
+ *     description: Only works if no users exist in the database
+ *     security:
+ *       - csrfToken: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: admin@isratube.com
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 minLength: 8
+ *                 example: AdminPass123!
+ *     responses:
+ *       201:
+ *         description: Admin account created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: ✅ Admin account created successfully
+ *       400:
+ *         description: Validation error
+ *       403:
+ *         description: Setup already completed or CSRF error
+ *       500:
+ *         description: Server error
+ */
 app.post("/setup", validateCSRFToken, async (req, res) => {
     try {
         const userCount = await User.countDocuments();
@@ -195,6 +259,59 @@ app.post("/setup", validateCSRFToken, async (req, res) => {
 // ===============================
 // LOGIN
 // ===============================
+/**
+ * @swagger
+ * /login:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: User login
+ *     description: Authenticate user and get role-based redirect
+ *     security:
+ *       - csrfToken: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: user@example.com
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: UserPass123!
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 role:
+ *                   type: string
+ *                   enum: [admin, user]
+ *                 message:
+ *                   type: string
+ *                 redirect:
+ *                   type: string
+ *       400:
+ *         description: Missing credentials
+ *       401:
+ *         description: Incorrect password
+ *       403:
+ *         description: Account locked or CSRF error
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
 app.post("/login", validateCSRFToken, async (req, res) => {
     try {
         let { email, password } = req.body;
@@ -251,6 +368,58 @@ app.post("/login", validateCSRFToken, async (req, res) => {
 // ===============================
 // SIGNUP
 // ===============================
+/**
+ * @swagger
+ * /signup:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Create a new user account
+ *     security:
+ *       - csrfToken: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - repeatPassword
+ *               - paid
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: newuser@example.com
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 minLength: 8
+ *                 example: SecurePass123!
+ *               repeatPassword:
+ *                 type: string
+ *                 format: password
+ *                 example: SecurePass123!
+ *               paid:
+ *                 type: boolean
+ *                 example: false
+ *               favArray:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 maxItems: 50
+ *                 example: ["movie1", "movie2"]
+ *     responses:
+ *       201:
+ *         description: Signup successful
+ *       400:
+ *         description: Validation error
+ *       409:
+ *         description: Email already exists
+ *       500:
+ *         description: Server error
+ */
 app.post("/signup", validateCSRFToken, async (req, res) => {
     try {
         let { email, password, repeatPassword, paid, favArray = [] } = req.body;
@@ -295,6 +464,25 @@ app.post("/signup", validateCSRFToken, async (req, res) => {
 // ===============================
 // GET ALL USERS (ADMIN)
 // ===============================
+/**
+ * @swagger
+ * /api/users:
+ *   get:
+ *     tags: [Users]
+ *     summary: Get all users (Admin only)
+ *     description: Retrieve list of all users in the system
+ *     responses:
+ *       200:
+ *         description: List of users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
+ *       500:
+ *         description: Server error
+ */
 app.get("/api/users", async (req, res) => {
     console.log("📋 GET /api/users called");
     try {
@@ -310,6 +498,55 @@ app.get("/api/users", async (req, res) => {
 // ===============================
 // UPDATE USER
 // ===============================
+/**
+ * @swagger
+ * /api/users/{email}:
+ *   put:
+ *     tags: [Users]
+ *     summary: Update user information (Admin only)
+ *     security:
+ *       - csrfToken: []
+ *     parameters:
+ *       - in: path
+ *         name: email
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: email
+ *         description: User email to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               newEmail:
+ *                 type: string
+ *                 format: email
+ *               newPassword:
+ *                 type: string
+ *                 format: password
+ *                 minLength: 8
+ *               newPaid:
+ *                 type: boolean
+ *               newFavArray:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 maxItems: 50
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: User not found
+ *       409:
+ *         description: Email already in use
+ *       500:
+ *         description: Server error
+ */
 app.put("/api/users/:email", validateCSRFToken, async (req, res) => {
     try {
         const userEmail = decodeURIComponent(req.params.email).toLowerCase();
@@ -351,6 +588,30 @@ app.put("/api/users/:email", validateCSRFToken, async (req, res) => {
 // ===============================
 // DELETE USER
 // ===============================
+/**
+ * @swagger
+ * /api/users/{email}:
+ *   delete:
+ *     tags: [Users]
+ *     summary: Delete user (Admin only)
+ *     security:
+ *       - csrfToken: []
+ *     parameters:
+ *       - in: path
+ *         name: email
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: email
+ *         description: User email to delete
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
 app.delete("/api/users/:email", validateCSRFToken, async (req, res) => {
     try {
         const userEmail = decodeURIComponent(req.params.email).toLowerCase();
