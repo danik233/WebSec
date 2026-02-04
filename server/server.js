@@ -1,3 +1,6 @@
+// ===============================
+// ENVIRONMENT & DEPENDENCIES
+// ===============================
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
@@ -6,630 +9,791 @@ const cors = require("cors");
 const fs = require("fs");
 const argon2 = require("argon2");
 const nodemailer = require("nodemailer");
-const cookieParser = require("cookie-parser"); 
-const crypto = require("crypto"); 
+const cookieParser = require("cookie-parser");
+const crypto = require("crypto");
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger.config');
 const User = require("./modules/user");
 const uploadRoutes = require("./routes/upload.routes");
 
+// ===============================
+// SECURITY & APP CONSTANTS
+// ===============================
+const CONSTANTS = Object.freeze({
+  // Server
+  PORT: process.env.PORT || 3000,
+  NODE_ENV: process.env.NODE_ENV || "development",
+  
+  // Password Validation
+  PASSWORD_MIN_LENGTH: 8,
+  PASSWORD_UPPERCASE_REGEX: /[A-Z]/,
+  PASSWORD_LOWERCASE_REGEX: /[a-z]/,
+  PASSWORD_NUMBER_REGEX: /\d/,
+  PASSWORD_SPECIAL_REGEX: /[!@#$%^&*]/,
+  PASSWORD_SPECIAL_CHARS: "!@#$%^&*",
+  
+  // CSRF Protection
+  CSRF_TOKEN_COOKIE_NAME: "XSRF-TOKEN",
+  CSRF_TOKEN_HEADER_NAME: "x-xsrf-token",
+  CSRF_TOKEN_BYTES: 32,
+  CSRF_COOKIE_MAX_AGE: 24 * 60 * 60 * 1000, // 24 hours
+  
+  // Account Security
+  MAX_FAILED_ATTEMPTS: 5,
+  ACCOUNT_LOCK_DURATION: 10 * 60 * 1000, // 10 minutes
+  
+  // File Upload
+  MAX_FAVORITE_MOVIES: 50,
+  
+  // API Paths
+  UPLOAD_DIR_NAME: "uploads",
+  DATA_DIR_NAME: "data",
+  USERS_JSON_FILE: "users.json",
+  
+  // File Types
+  JSON_FILE_EXTENSION: ".json",
+  
+  // HTTP Methods
+  SAFE_METHODS: ["GET", "HEAD", "OPTIONS"],
+  
+  // Email
+  EMAIL_SERVICE: "gmail",
+  
+  // Swagger
+  SWAGGER_EXPLORER: true,
+  SWAGGER_SITE_TITLE: "IsraTube API Docs",
+  SWAGGER_DOC_PATH: "/api-docs",
+  
+  // Database
+  MONGODB_OPTIONS: {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  },
+  
+  // User Roles
+  ROLE_ADMIN: "ADMIN",
+  ROLE_USER: "user",
+  
+  // Trial Duration
+  FREE_TRIAL_DAYS: 30,
+});
+
+Object.freeze(CONSTANTS);
+
+// ===============================
+// APP INITIALIZATION
+// ===============================
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // ===============================
-// PASSWORD VALIDATION
+// PASSWORD VALIDATION BLOCK
 // ===============================
-function validatePassword(password) {
-    if (password.length < 8) throw "Password too short";
-    if (!/[A-Z]/.test(password)) throw "Password must have an uppercase letter";
-    if (!/[a-z]/.test(password)) throw "Password must have a lowercase letter";
-    if (!/\d/.test(password)) throw "Password must have a number";
-    if (!/[!@#$%^&*]/.test(password)) throw "Password must have a special character (!@#$%^&*)";
+{
+  /**
+   * Validates password strength against security requirements
+   * @param {string} password - Password to validate
+   * @throws {string} - Error message if validation fails
+   * @returns {void}
+   */
+  const validatePassword = (password) => {
+    if (password.length < CONSTANTS.PASSWORD_MIN_LENGTH) {
+      throw `Password too short (minimum ${CONSTANTS.PASSWORD_MIN_LENGTH} characters)`;
+    }
+    if (!CONSTANTS.PASSWORD_UPPERCASE_REGEX.test(password)) {
+      throw "Password must have an uppercase letter";
+    }
+    if (!CONSTANTS.PASSWORD_LOWERCASE_REGEX.test(password)) {
+      throw "Password must have a lowercase letter";
+    }
+    if (!CONSTANTS.PASSWORD_NUMBER_REGEX.test(password)) {
+      throw "Password must have a number";
+    }
+    if (!CONSTANTS.PASSWORD_SPECIAL_REGEX.test(password)) {
+      throw `Password must have a special character (${CONSTANTS.PASSWORD_SPECIAL_CHARS})`;
+    }
+  };
+
+  // Expose through module context
+  app.locals.validatePassword = validatePassword;
 }
 
 // ===============================
-// CSRF PROTECTION
+// CSRF PROTECTION BLOCK
 // ===============================
-function generateCSRFToken() {
-    return crypto.randomBytes(32).toString("hex");
-}
+{
+  /**
+   * Generates a cryptographically secure CSRF token
+   * @returns {string} - Hex-encoded CSRF token
+   */
+  const generateCSRFToken = () => {
+    return crypto.randomBytes(CONSTANTS.CSRF_TOKEN_BYTES).toString("hex");
+  };
 
-function csrfTokenMiddleware(req, res, next) {
-    if (["GET", "HEAD", "OPTIONS"].includes(req.method)) {
-        const existingToken = req.cookies["XSRF-TOKEN"];
-        if (!existingToken) {
-            const token = generateCSRFToken();
-            res.cookie("XSRF-TOKEN", token, {
-                httpOnly: false,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "strict",
-                maxAge: 24 * 60 * 60 * 1000
-            });
-        }
+  /**
+   * Middleware to set CSRF token for GET/HEAD/OPTIONS requests
+   * @param {object} req - Express request object
+   * @param {object} res - Express response object
+   * @param {function} next - Express next middleware function
+   * @returns {void}
+   */
+  const csrfTokenMiddleware = (req, res, next) => {
+    if (CONSTANTS.SAFE_METHODS.includes(req.method)) {
+      const existingToken = req.cookies[CONSTANTS.CSRF_TOKEN_COOKIE_NAME];
+      if (!existingToken) {
+        const token = generateCSRFToken();
+        res.cookie(CONSTANTS.CSRF_TOKEN_COOKIE_NAME, token, {
+          httpOnly: false,
+          secure: CONSTANTS.NODE_ENV === "production",
+          sameSite: "strict",
+          maxAge: CONSTANTS.CSRF_COOKIE_MAX_AGE,
+        });
+      }
     }
     next();
-}
+  };
 
-function validateCSRFToken(req, res, next) {
-    if (["GET", "HEAD", "OPTIONS"].includes(req.method)) {
-        return next();
+  /**
+   * Middleware to validate CSRF token on state-changing requests
+   * @param {object} req - Express request object
+   * @param {object} res - Express response object
+   * @param {function} next - Express next middleware function
+   * @returns {void}
+   */
+  const validateCSRFToken = (req, res, next) => {
+    if (CONSTANTS.SAFE_METHODS.includes(req.method)) {
+      return next();
     }
 
-    const cookieToken = req.cookies["XSRF-TOKEN"];
-    const headerToken = req.headers["x-xsrf-token"];
+    const cookieToken = req.cookies[CONSTANTS.CSRF_TOKEN_COOKIE_NAME];
+    const headerToken = req.headers[CONSTANTS.CSRF_TOKEN_HEADER_NAME];
 
     if (!cookieToken || !headerToken) {
-        console.log("❌ CSRF token missing - Cookie:", !!cookieToken, "Header:", !!headerToken);
-        return res.status(403).json({ message: "CSRF token missing" });
+      console.log(
+        `❌ CSRF token missing - Cookie: ${!!cookieToken}, Header: ${!!headerToken}`
+      );
+      return res.status(403).json({ message: "CSRF token missing" });
     }
 
     if (cookieToken !== headerToken) {
-        console.log("❌ CSRF token mismatch");
-        return res.status(403).json({ message: "CSRF token mismatch" });
+      console.log("❌ CSRF token mismatch");
+      return res.status(403).json({ message: "CSRF token mismatch" });
     }
 
     next();
+  };
+
+  // Expose through app.locals
+  app.locals.csrfTokenMiddleware = csrfTokenMiddleware;
+  app.locals.validateCSRFToken = validateCSRFToken;
 }
 
-// Block access to JSON data files
-app.use((req, res, next) => {
-    if (req.url.endsWith(".json")) return res.status(403).send("Access Denied");
+// ===============================
+// MIDDLEWARE SETUP
+// ===============================
+{
+  // Block access to JSON files
+  app.use((req, res, next) => {
+    if (req.url.endsWith(CONSTANTS.JSON_FILE_EXTENSION)) {
+      return res.status(403).send("Access Denied");
+    }
     next();
-});
+  });
 
-app.use(cors());
-app.use(express.json());
-app.use(cookieParser());
-app.use(csrfTokenMiddleware);
-app.use(express.static(path.join(__dirname, "..", "public")));
-
-// ===============================
-// SWAGGER CONFIGURATION
-// ===============================
-// CRITICAL: Only expose Swagger in development
-if (process.env.NODE_ENV !== 'production') {
-    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-        explorer: true,
-        customCss: '.swagger-ui .topbar { display: none }',
-        customSiteTitle: "IsraTube API Docs"
-    }));
-    console.log(`📚 Swagger UI available at http://localhost:${PORT}/api-docs`);
-} else {
-    // In production, block Swagger completely
-    app.use('/api-docs', (req, res) => {
-        res.status(404).send('Not Found');
-    });
+  app.use(cors());
+  app.use(express.json());
+  app.use(cookieParser());
+  app.use(app.locals.csrfTokenMiddleware);
+  app.use(express.static(path.join(__dirname, "..", "public")));
 }
 
 // ===============================
-// FILE UPLOAD - Ensure upload directory exists
+// SWAGGER CONFIGURATION BLOCK
 // ===============================
-const uploadsDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadsDir)) {
+{
+  if (CONSTANTS.NODE_ENV !== "production") {
+    app.use(
+      CONSTANTS.SWAGGER_DOC_PATH,
+      swaggerUi.serve,
+      swaggerUi.setup(swaggerSpec, {
+        explorer: CONSTANTS.SWAGGER_EXPLORER,
+        customCss: ".swagger-ui .topbar { display: none }",
+        customSiteTitle: CONSTANTS.SWAGGER_SITE_TITLE,
+      })
+    );
+    console.log(`📚 Swagger UI available at http://localhost:${CONSTANTS.PORT}${CONSTANTS.SWAGGER_DOC_PATH}`);
+  } else {
+    app.use(CONSTANTS.SWAGGER_DOC_PATH, (req, res) => {
+      res.status(404).send("Not Found");
+    });
+  }
+}
+
+// ===============================
+// FILE UPLOAD DIRECTORY SETUP BLOCK
+// ===============================
+{
+  const uploadsDir = path.join(__dirname, CONSTANTS.UPLOAD_DIR_NAME);
+  if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true, mode: 0o755 });
     console.log("📁 Created uploads directory");
+  }
+
+  const dataDir = path.join(__dirname, CONSTANTS.DATA_DIR_NAME);
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true, mode: 0o755 });
+    console.log("📁 Created data directory");
+  }
 }
 
 // ===============================
 // FILE UPLOAD ROUTES
 // ===============================
-app.use("/api/upload", validateCSRFToken, uploadRoutes);
+{
+  app.use("/api/upload", app.locals.validateCSRFToken, uploadRoutes);
+}
 
 // ===============================
-// CONNECT TO MONGODB
+// DATABASE CONNECTION BLOCK
 // ===============================
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-.then(() => console.log("✅ Connected to MongoDB"))
-.catch(err => console.error("❌ MongoDB connection error:", err));
+{
+  mongoose
+    .connect(process.env.MONGO_URI, CONSTANTS.MONGODB_OPTIONS)
+    .then(() => console.log("✅ Connected to MongoDB"))
+    .catch((err) => console.error("❌ MongoDB connection error:", err));
+}
 
 // ===============================
-// MAILER CONFIG
+// MAILER CONFIGURATION BLOCK
 // ===============================
-const transporter = nodemailer.createTransport({
-    service: "gmail",
+{
+  const transporter = nodemailer.createTransport({
+    service: CONSTANTS.EMAIL_SERVICE,
     auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS,
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_PASS,
     },
-});
+  });
 
-async function sendSignupEmail(toEmail) {
+  /**
+   * Sends a welcome email to new user
+   * @async
+   * @param {string} toEmail - Recipient email address
+   * @returns {Promise<void>}
+   */
+  const sendSignupEmail = async (toEmail) => {
     const mailOptions = {
-        from: `"IsraTube" <${process.env.GMAIL_USER}>`,
-        to: toEmail,
-        subject: "Welcome to IsraTube!",
-        html: `<h2>Welcome 🎉</h2><p>Thanks for signing up to IsraTube.</p>`,
+      from: `"IsraTube" <${process.env.GMAIL_USER}>`,
+      to: toEmail,
+      subject: "Welcome to IsraTube!",
+      html: `<h2>Welcome 🎉</h2><p>Thanks for signing up to IsraTube.</p>`,
     };
 
     try {
-        await transporter.sendMail(mailOptions);
-        console.log(`📧 Email sent to ${toEmail}`);
+      await transporter.sendMail(mailOptions);
+      console.log(`📧 Email sent to ${toEmail}`);
     } catch (err) {
-        console.error("❌ Failed to send email:", err);
+      console.error("❌ Failed to send email:", err);
     }
-}
+  };
 
-async function syncUsersJson() {
-    try {
-        const users = await User.find().lean();
-        fs.writeFileSync(
-            path.join(__dirname, "data", "users.json"),
-            JSON.stringify(users, null, 2),
-            "utf8"
-        );
-        console.log("🔁 users.json synced");
-    } catch (err) {
-        console.error("❌ Failed to sync JSON:", err);
-    }
+  app.locals.sendSignupEmail = sendSignupEmail;
 }
 
 // ===============================
-// ROUTES (STATIC PAGES)
+// DATABASE SYNC BLOCK
 // ===============================
-app.get("/", (req, res) => res.sendFile(path.join(__dirname, "..", "public", "index.html")));
-app.get("/admin.html", (req, res) => res.sendFile(path.join(__dirname, "..", "public", "admin.html")));
-app.get("/homepage.html", (req, res) => res.sendFile(path.join(__dirname, "..", "public", "homepage.html")));
-
-// ===============================
-// FIRST-USER / ADMIN SETUP
-// ===============================
-/**
- * @swagger
- * /setup:
- *   post:
- *     tags: [Authentication]
- *     summary: Create the first admin account
- *     description: Only works if no users exist in the database
- *     security:
- *       - csrfToken: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 example: admin@isratube.com
- *               password:
- *                 type: string
- *                 format: password
- *                 minLength: 8
- *                 example: AdminPass123!
- *     responses:
- *       201:
- *         description: Admin account created successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: ✅ Admin account created successfully
- *       400:
- *         description: Validation error
- *       403:
- *         description: Setup already completed or CSRF error
- *       500:
- *         description: Server error
- */
-app.post("/setup", validateCSRFToken, async (req, res) => {
+{
+  /**
+   * Syncs user data from MongoDB to users.json file
+   * @async
+   * @returns {Promise<void>}
+   */
+  const syncUsersJson = async () => {
     try {
-        const userCount = await User.countDocuments();
-        if (userCount > 0)
-            return res.status(403).json({ message: "Setup already completed" });
+      const users = await User.find().lean();
+      const filePath = path.join(
+        __dirname,
+        CONSTANTS.DATA_DIR_NAME,
+        CONSTANTS.USERS_JSON_FILE
+      );
+      fs.writeFileSync(filePath, JSON.stringify(users, null, 2), "utf8");
+      console.log("🔁 users.json synced");
+    } catch (err) {
+      console.error("❌ Failed to sync JSON:", err);
+    }
+  };
 
-        const { email, password } = req.body;
-        if (!email || !password)
-            return res.status(400).json({ message: "Email and password required" });
+  app.locals.syncUsersJson = syncUsersJson;
+}
 
-        try {
-            validatePassword(password);
-        } catch (err) {
-            return res.status(400).json({ message: err });
-        }
+// ===============================
+// STATIC ROUTES BLOCK
+// ===============================
+{
+  app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "..", "public", "index.html"));
+  });
 
-        const hashedPassword = await argon2.hash(password);
+  app.get("/admin.html", (req, res) => {
+    res.sendFile(path.join(__dirname, "..", "public", "admin.html"));
+  });
 
-        const admin = new User({
-            email: email.toLowerCase(),
-            password: hashedPassword,
-            paid: true,
-            role: "ADMIN"
+  app.get("/homepage.html", (req, res) => {
+    res.sendFile(path.join(__dirname, "..", "public", "homepage.html"));
+  });
+}
+
+// ===============================
+// AUTHENTICATION ROUTES BLOCK
+// ===============================
+{
+  /**
+   * POST /setup
+   * Creates the first admin account (only if no users exist)
+   * @swagger
+   * /setup:
+   *   post:
+   *     tags: [Authentication]
+   *     summary: Create the first admin account
+   *     description: Only works if no users exist in the database
+   *     security:
+   *       - csrfToken: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - email
+   *               - password
+   *             properties:
+   *               email:
+   *                 type: string
+   *                 format: email
+   *                 example: admin@isratube.com
+   *               password:
+   *                 type: string
+   *                 format: password
+   *                 minLength: 8
+   *                 example: AdminPass123!
+   *     responses:
+   *       201:
+   *         description: Admin account created successfully
+   *       400:
+   *         description: Validation error
+   *       403:
+   *         description: Setup already completed or CSRF error
+   *       500:
+   *         description: Server error
+   */
+  app.post("/setup", app.locals.validateCSRFToken, async (req, res) => {
+    try {
+      const userCount = await User.countDocuments();
+      if (userCount > 0) {
+        return res.status(403).json({ message: "Setup already completed" });
+      }
+
+      const { email, password } = req.body;
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password required" });
+      }
+
+      try {
+        app.locals.validatePassword(password);
+      } catch (err) {
+        return res.status(400).json({ message: err });
+      }
+
+      const hashedPassword = await argon2.hash(password);
+      const admin = new User({
+        email: email.toLowerCase(),
+        password: hashedPassword,
+        paid: true,
+        role: CONSTANTS.ROLE_ADMIN,
+      });
+
+      await admin.save();
+      res.status(201).json({ message: "✅ Admin account created successfully" });
+    } catch (err) {
+      console.error("❌ Setup error:", err);
+      res.status(500).json({ message: "Server error during admin setup" });
+    }
+  });
+
+  /**
+   * POST /login
+   * Authenticates user and returns role-based redirect
+   * @swagger
+   * /login:
+   *   post:
+   *     tags: [Authentication]
+   *     summary: User login
+   *     description: Authenticate user and get role-based redirect
+   *     security:
+   *       - csrfToken: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - email
+   *               - password
+   *             properties:
+   *               email:
+   *                 type: string
+   *                 format: email
+   *               password:
+   *                 type: string
+   *                 format: password
+   *     responses:
+   *       200:
+   *         description: Login successful
+   *       400:
+   *         description: Missing credentials
+   *       401:
+   *         description: Incorrect password
+   *       403:
+   *         description: Account locked
+   *       404:
+   *         description: User not found
+   *       500:
+   *         description: Server error
+   */
+  app.post("/login", app.locals.validateCSRFToken, async (req, res) => {
+    try {
+      let { email, password } = req.body;
+      if (email) email = email.toLowerCase();
+
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password required" });
+      }
+
+      // Hardcoded admin login
+      if (
+        email === process.env.USER_ADMIN &&
+        password === process.env.PASSWORD_ADMIN
+      ) {
+        return res.json({
+          role: "admin",
+          message: "Admin login successful",
+          redirect: "/admin.html",
         });
+      }
 
-        await admin.save();
-        res.status(201).json({ message: "✅ Admin account created successfully" });
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ message: "User not found. Please signup." });
+      }
 
-    } catch (err) {
-        console.error("❌ Setup error:", err);
-        res.status(500).json({ message: "Server error during admin setup" });
-    }
-});
+      if (user.lockUntil && user.lockUntil > Date.now()) {
+        return res.status(403).json({ message: "Account locked. Try later." });
+      }
 
-// ===============================
-// LOGIN
-// ===============================
-/**
- * @swagger
- * /login:
- *   post:
- *     tags: [Authentication]
- *     summary: User login
- *     description: Authenticate user and get role-based redirect
- *     security:
- *       - csrfToken: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 example: user@example.com
- *               password:
- *                 type: string
- *                 format: password
- *                 example: UserPass123!
- *     responses:
- *       200:
- *         description: Login successful
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 role:
- *                   type: string
- *                   enum: [admin, user]
- *                 message:
- *                   type: string
- *                 redirect:
- *                   type: string
- *       400:
- *         description: Missing credentials
- *       401:
- *         description: Incorrect password
- *       403:
- *         description: Account locked or CSRF error
- *       404:
- *         description: User not found
- *       500:
- *         description: Server error
- */
-app.post("/login", validateCSRFToken, async (req, res) => {
-    try {
-        let { email, password } = req.body;
-        if (email) email = email.toLowerCase();
+      const passwordMatch = await argon2.verify(user.password, password);
 
-        if (!email || !password)
-            return res.status(400).json({ message: "Email and password required" });
+      if (!passwordMatch) {
+        user.failedAttempts = (user.failedAttempts || 0) + 1;
 
-        // Hardcoded admin login
-        if (email === process.env.USER_ADMIN && password === process.env.PASSWORD_ADMIN) {
-            return res.json({
-                role: "admin",
-                message: "Admin login successful",
-                redirect: "/admin.html"
-            });
+        if (user.failedAttempts >= CONSTANTS.MAX_FAILED_ATTEMPTS) {
+          user.lockUntil = Date.now() + CONSTANTS.ACCOUNT_LOCK_DURATION;
+          await user.save();
+          return res.status(403).json({
+            message: "Account locked due to too many failed attempts. Try in 10 minutes.",
+          });
         }
 
-        const user = await User.findOne({ email });
-        if (!user)
-            return res.status(404).json({ message: "User not found. Please signup." });
-
-        if (user.lockUntil && user.lockUntil > Date.now()) {
-            return res.status(403).json({ message: "Account locked. Try later." });
-        }
-
-        const passwordMatch = await argon2.verify(user.password, password);
-
-        if (!passwordMatch) {
-            user.failedAttempts = (user.failedAttempts || 0) + 1;
-
-            if (user.failedAttempts >= 5) {
-                user.lockUntil = Date.now() + 10 * 60 * 1000;
-                await user.save();
-                return res.status(403).json({ message: "Account locked due to too many failed attempts. Try in 10 minutes." });
-            }
-
-            await user.save();
-            return res.status(401).json({ message: "Incorrect password." });
-        }
-
-        user.failedAttempts = 0;
-        user.lockUntil = null;
         await user.save();
+        return res.status(401).json({ message: "Incorrect password." });
+      }
 
-        const message = user.paid ? "Login successful." : "Login successful. Free trial 30 days.";
-        res.json({ role: "user", message, redirect: "/homepage.html" });
+      user.failedAttempts = 0;
+      user.lockUntil = null;
+      await user.save();
 
+      const message = user.paid
+        ? "Login successful."
+        : `Login successful. Free trial ${CONSTANTS.FREE_TRIAL_DAYS} days.`;
+
+      res.json({ role: CONSTANTS.ROLE_USER, message, redirect: "/homepage.html" });
     } catch (err) {
-        console.error("❌ Login error:", err);
-        res.status(500).json({ message: "Server error during login" });
+      console.error("❌ Login error:", err);
+      res.status(500).json({ message: "Server error during login" });
     }
-});
+  });
 
-// ===============================
-// SIGNUP
-// ===============================
-/**
- * @swagger
- * /signup:
- *   post:
- *     tags: [Authentication]
- *     summary: Create a new user account
- *     security:
- *       - csrfToken: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *               - repeatPassword
- *               - paid
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 example: newuser@example.com
- *               password:
- *                 type: string
- *                 format: password
- *                 minLength: 8
- *                 example: SecurePass123!
- *               repeatPassword:
- *                 type: string
- *                 format: password
- *                 example: SecurePass123!
- *               paid:
- *                 type: boolean
- *                 example: false
- *               favArray:
- *                 type: array
- *                 items:
- *                   type: string
- *                 maxItems: 50
- *                 example: ["movie1", "movie2"]
- *     responses:
- *       201:
- *         description: Signup successful
- *       400:
- *         description: Validation error
- *       409:
- *         description: Email already exists
- *       500:
- *         description: Server error
- */
-app.post("/signup", validateCSRFToken, async (req, res) => {
+  /**
+   * POST /signup
+   * Creates a new user account
+   * @swagger
+   * /signup:
+   *   post:
+   *     tags: [Authentication]
+   *     summary: Create a new user account
+   *     security:
+   *       - csrfToken: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - email
+   *               - password
+   *               - repeatPassword
+   *               - paid
+   *             properties:
+   *               email:
+   *                 type: string
+   *                 format: email
+   *               password:
+   *                 type: string
+   *                 format: password
+   *               repeatPassword:
+   *                 type: string
+   *                 format: password
+   *               paid:
+   *                 type: boolean
+   *               favArray:
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *                 maxItems: 50
+   *     responses:
+   *       201:
+   *         description: Signup successful
+   *       400:
+   *         description: Validation error
+   *       409:
+   *         description: Email already exists
+   *       500:
+   *         description: Server error
+   */
+  app.post("/signup", app.locals.validateCSRFToken, async (req, res) => {
     try {
-        let { email, password, repeatPassword, paid, favArray = [] } = req.body;
-        if (email) email = email.toLowerCase();
+      let { email, password, repeatPassword, paid, favArray = [] } = req.body;
+      if (email) email = email.toLowerCase();
 
-        if (!email || !password || !repeatPassword || typeof paid !== "boolean")
-            return res.status(400).json({ message: "All fields required" });
+      if (!email || !password || !repeatPassword || typeof paid !== "boolean") {
+        return res.status(400).json({ message: "All fields required" });
+      }
 
-        if (password !== repeatPassword)
-            return res.status(400).json({ message: "Passwords do not match" });
+      if (password !== repeatPassword) {
+        return res.status(400).json({ message: "Passwords do not match" });
+      }
 
-        try {
-            validatePassword(password);
-        } catch (err) {
-            return res.status(400).json({ message: err });
-        }
+      try {
+        app.locals.validatePassword(password);
+      } catch (err) {
+        return res.status(400).json({ message: err });
+      }
 
-        if (favArray.length > 50)
-            return res.status(400).json({ message: "Too many favorite movies" });
+      if (favArray.length > CONSTANTS.MAX_FAVORITE_MOVIES) {
+        return res.status(400).json({ message: "Too many favorite movies" });
+      }
 
-        const exists = await User.findOne({ email });
-        if (exists)
-            return res.status(409).json({ message: "Email already exists." });
+      const exists = await User.findOne({ email });
+      if (exists) {
+        return res.status(409).json({ message: "Email already exists." });
+      }
 
-        const hashedPassword = await argon2.hash(password);
+      const hashedPassword = await argon2.hash(password);
+      const newUser = new User({
+        email,
+        password: hashedPassword,
+        paid,
+        favArray,
+      });
 
-        const newUser = new User({ email, password: hashedPassword, paid, favArray });
-        await newUser.save();
-        await syncUsersJson();
-        await sendSignupEmail(email);
+      await newUser.save();
+      await app.locals.syncUsersJson();
+      await app.locals.sendSignupEmail(email);
 
-        res.status(201).json({
-            message: paid ? "Signup successful." : "Signup successful. Free trial 30 days."
-        });
+      const message = paid
+        ? "Signup successful."
+        : `Signup successful. Free trial ${CONSTANTS.FREE_TRIAL_DAYS} days.`;
 
+      res.status(201).json({ message });
     } catch (err) {
-        console.error("❌ Signup error:", err);
-        res.status(500).json({ message: "Server error during signup" });
+      console.error("❌ Signup error:", err);
+      res.status(500).json({ message: "Server error during signup" });
     }
-});
+  });
+}
 
 // ===============================
-// GET ALL USERS (ADMIN)
+// USER MANAGEMENT ROUTES BLOCK
 // ===============================
-/**
- * @swagger
- * /api/users:
- *   get:
- *     tags: [Users]
- *     summary: Get all users (Admin only)
- *     description: Retrieve list of all users in the system
- *     responses:
- *       200:
- *         description: List of users
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/User'
- *       500:
- *         description: Server error
- */
-app.get("/api/users", async (req, res) => {
+{
+  /**
+   * GET /api/users
+   * Retrieves all users (Admin only)
+   * @swagger
+   * /api/users:
+   *   get:
+   *     tags: [Users]
+   *     summary: Get all users
+   *     description: Retrieve list of all users in the system
+   *     responses:
+   *       200:
+   *         description: List of users
+   *       500:
+   *         description: Server error
+   */
+  app.get("/api/users", async (req, res) => {
     console.log("📋 GET /api/users called");
     try {
-        const users = await User.find().lean();
-        await syncUsersJson();
-        res.json(users);
+      const users = await User.find().lean();
+      await app.locals.syncUsersJson();
+      res.json(users);
     } catch (err) {
-        console.error("❌ Get users error:", err);
-        res.status(500).json({ error: "Failed to fetch users" });
+      console.error("❌ Get users error:", err);
+      res.status(500).json({ error: "Failed to fetch users" });
     }
-});
+  });
 
-// ===============================
-// UPDATE USER
-// ===============================
-/**
- * @swagger
- * /api/users/{email}:
- *   put:
- *     tags: [Users]
- *     summary: Update user information (Admin only)
- *     security:
- *       - csrfToken: []
- *     parameters:
- *       - in: path
- *         name: email
- *         required: true
- *         schema:
- *           type: string
- *           format: email
- *         description: User email to update
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               newEmail:
- *                 type: string
- *                 format: email
- *               newPassword:
- *                 type: string
- *                 format: password
- *                 minLength: 8
- *               newPaid:
- *                 type: boolean
- *               newFavArray:
- *                 type: array
- *                 items:
- *                   type: string
- *                 maxItems: 50
- *     responses:
- *       200:
- *         description: User updated successfully
- *       400:
- *         description: Validation error
- *       404:
- *         description: User not found
- *       409:
- *         description: Email already in use
- *       500:
- *         description: Server error
- */
-app.put("/api/users/:email", validateCSRFToken, async (req, res) => {
+  /**
+   * PUT /api/users/:email
+   * Updates user information (Admin only)
+   * @swagger
+   * /api/users/{email}:
+   *   put:
+   *     tags: [Users]
+   *     summary: Update user information
+   *     security:
+   *       - csrfToken: []
+   *     parameters:
+   *       - in: path
+   *         name: email
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: email
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               newEmail:
+   *                 type: string
+   *                 format: email
+   *               newPassword:
+   *                 type: string
+   *                 format: password
+   *               newPaid:
+   *                 type: boolean
+   *               newFavArray:
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *     responses:
+   *       200:
+   *         description: User updated successfully
+   *       400:
+   *         description: Validation error
+   *       404:
+   *         description: User not found
+   *       409:
+   *         description: Email already in use
+   *       500:
+   *         description: Server error
+   */
+  app.put("/api/users/:email", app.locals.validateCSRFToken, async (req, res) => {
     try {
-        const userEmail = decodeURIComponent(req.params.email).toLowerCase();
-        const { newEmail, newPassword, newPaid, newFavArray } = req.body;
+      const userEmail = decodeURIComponent(req.params.email).toLowerCase();
+      const { newEmail, newPassword, newPaid, newFavArray } = req.body;
 
-        const user = await User.findOne({ email: userEmail });
-        if (!user)
-            return res.status(404).json({ error: "User not found" });
+      const user = await User.findOne({ email: userEmail });
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
 
-        if (newEmail && newEmail !== user.email) {
-            const exists = await User.findOne({ email: newEmail });
-            if (exists) return res.status(409).json({ error: "Email already in use" });
-            user.email = newEmail.toLowerCase();
+      if (newEmail && newEmail !== user.email) {
+        const exists = await User.findOne({ email: newEmail });
+        if (exists) return res.status(409).json({ error: "Email already in use" });
+        user.email = newEmail.toLowerCase();
+      }
+
+      if (newPassword) {
+        try {
+          app.locals.validatePassword(newPassword);
+        } catch (err) {
+          return res.status(400).json({ error: err });
         }
+        user.password = await argon2.hash(newPassword);
+      }
 
-        if (newPassword) {
-            try { validatePassword(newPassword); } 
-            catch (err) { return res.status(400).json({ error: err }); }
-            user.password = await argon2.hash(newPassword);
+      if (typeof newPaid === "boolean") user.paid = newPaid;
+
+      if (Array.isArray(newFavArray)) {
+        if (newFavArray.length > CONSTANTS.MAX_FAVORITE_MOVIES) {
+          return res.status(400).json({ error: "Too many favorite movies" });
         }
+        user.favArray = newFavArray;
+      }
 
-        if (typeof newPaid === "boolean") user.paid = newPaid;
-
-        if (Array.isArray(newFavArray)) {
-            if (newFavArray.length > 50) return res.status(400).json({ error: "Too many favorite movies" });
-            user.favArray = newFavArray;
-        }
-
-        await user.save();
-        await syncUsersJson();
-        res.json({ message: `User ${userEmail} updated.` });
-
+      await user.save();
+      await app.locals.syncUsersJson();
+      res.json({ message: `User ${userEmail} updated.` });
     } catch (err) {
-        console.error("❌ Update user error:", err);
-        res.status(500).json({ error: "Failed to update user" });
+      console.error("❌ Update user error:", err);
+      res.status(500).json({ error: "Failed to update user" });
     }
-});
+  });
 
-// ===============================
-// DELETE USER
-// ===============================
-/**
- * @swagger
- * /api/users/{email}:
- *   delete:
- *     tags: [Users]
- *     summary: Delete user (Admin only)
- *     security:
- *       - csrfToken: []
- *     parameters:
- *       - in: path
- *         name: email
- *         required: true
- *         schema:
- *           type: string
- *           format: email
- *         description: User email to delete
- *     responses:
- *       200:
- *         description: User deleted successfully
- *       404:
- *         description: User not found
- *       500:
- *         description: Server error
- */
-app.delete("/api/users/:email", validateCSRFToken, async (req, res) => {
+  /**
+   * DELETE /api/users/:email
+   * Deletes a user (Admin only)
+   * @swagger
+   * /api/users/{email}:
+   *   delete:
+   *     tags: [Users]
+   *     summary: Delete user
+   *     security:
+   *       - csrfToken: []
+   *     parameters:
+   *       - in: path
+   *         name: email
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: email
+   *     responses:
+   *       200:
+   *         description: User deleted successfully
+   *       404:
+   *         description: User not found
+   *       500:
+   *         description: Server error
+   */
+  app.delete("/api/users/:email", app.locals.validateCSRFToken, async (req, res) => {
     try {
-        const userEmail = decodeURIComponent(req.params.email).toLowerCase();
-        const removed = await User.findOneAndDelete({ email: userEmail });
+      const userEmail = decodeURIComponent(req.params.email).toLowerCase();
+      const removed = await User.findOneAndDelete({ email: userEmail });
 
-        if (!removed)
-            return res.status(404).json({ error: "User not found" });
+      if (!removed) {
+        return res.status(404).json({ error: "User not found" });
+      }
 
-        await syncUsersJson();
-        res.json({ message: `User ${userEmail} deleted.` });
-
+      await app.locals.syncUsersJson();
+      res.json({ message: `User ${userEmail} deleted.` });
     } catch (err) {
-        console.error("❌ Delete error:", err);
-        res.status(500).json({ error: "Failed to delete user" });
+      console.error("❌ Delete error:", err);
+      res.status(500).json({ error: "Failed to delete user" });
     }
-});
+  });
+}
 
 // ===============================
-// START SERVER
+// SERVER STARTUP BLOCK
 // ===============================
-app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
+{
+  app.listen(CONSTANTS.PORT, () => {
+    console.log(`🚀 Server running at http://localhost:${CONSTANTS.PORT}`);
+  });
+}

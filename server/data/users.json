@@ -194,21 +194,9 @@
     "__v": 0
   },
   {
-    "_id": "6932f92b75e815835726006f",
-    "email": "asa@gmail.com",
-    "password": "$argon2id$v=19$m=65536,t=3,p=4$UGwAIl7Tc5uLiWjTZo47dA$NlCPfJB6Q0L8eNmFgNL6HNSNlElJFUVn8CfhY9hdtb0",
-    "paid": true,
-    "role": "USER",
-    "favArray": [],
-    "failedAttempts": 0,
-    "lockUntil": null,
-    "signupDate": "2025-12-05T15:24:27.042Z",
-    "__v": 0
-  },
-  {
     "_id": "69612887f2d0cc57f61ac52f",
     "email": "dzirkiev95@gmail.com",
-    "password": "$argon2id$v=19$m=65536,t=3,p=4$EXYKkiXb7NprDkBsNka8BQ$96QQ8tLbOlcLYsnfUB5Ze+WR0/Kccpmc5V03tXiVDDE",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$gjCbsFVKacJ0TdYV2Zq/og$cUsRWxShAtclm2dSNk8nTkr9/W7qMG8ZI+YoXtuJxWk",
     "paid": false,
     "role": "USER",
     "favArray": [
@@ -337,5 +325,98 @@
     "lockUntil": null,
     "signupDate": "2026-01-09T16:10:47.725Z",
     "__v": 1
+  },
+  {
+    "_id": "6983150c2f20db21c868a69b",
+    "email": "dzirkiev35@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$lhkDBuq51WAPWAzfNUKzHA$4w1T7n0eHShX413iuWPVdtYysfTQZmXZtXWGkEx83z4",
+    "paid": true,
+    "role": "USER",
+    "favArray": [
+      {
+        "Title": "Hell Fest",
+        "Year": "2018",
+        "Rated": "R",
+        "Released": "28 Sep 2018",
+        "Runtime": "89 min",
+        "Genre": "Horror, Mystery, Thriller",
+        "Director": "Gregory Plotkin",
+        "Writer": "Seth M. Sherwood, Blair Butler, Akela Cooper",
+        "Actors": "Cynthea Mercado, Stephen Conroy, Amy Forsyth",
+        "Plot": "A masked serial killer turns a horror-themed amusement park into his own personal playground, terrorizing a group of friends while the rest of the patrons believe that it is all part of the show.",
+        "Language": "English",
+        "Country": "United States",
+        "Awards": "1 win total",
+        "Poster": "https://m.media-amazon.com/images/M/MV5BOGFkMWM5MmEtZjY4YS00MmFhLWEyOWQtNTcwYmRlYmZkMzU3XkEyXkFqcGc@._V1_SX300.jpg",
+        "Ratings": [
+          {
+            "Source": "Internet Movie Database",
+            "Value": "5.5/10"
+          },
+          {
+            "Source": "Rotten Tomatoes",
+            "Value": "41%"
+          },
+          {
+            "Source": "Metacritic",
+            "Value": "26/100"
+          }
+        ],
+        "Metascore": "26",
+        "imdbRating": "5.5",
+        "imdbVotes": "20,518",
+        "imdbID": "tt1999890",
+        "Type": "movie",
+        "DVD": "N/A",
+        "BoxOffice": "$11,107,431",
+        "Production": "N/A",
+        "Website": "N/A",
+        "Response": "True"
+      },
+      {
+        "Title": "Hell or High Water",
+        "Year": "2016",
+        "Rated": "R",
+        "Released": "26 Aug 2016",
+        "Runtime": "102 min",
+        "Genre": "Crime, Drama, Thriller",
+        "Director": "David Mackenzie",
+        "Writer": "Taylor Sheridan",
+        "Actors": "Chris Pine, Ben Foster, Jeff Bridges",
+        "Plot": "Toby is a divorced father who's trying to make a better life. His brother is an ex-con with a short temper and a loose trigger finger. Together, they plan a series of heists against the bank that's about to foreclose on their fami...",
+        "Language": "English",
+        "Country": "United States",
+        "Awards": "Nominated for 4 Oscars. 47 wins & 174 nominations total",
+        "Poster": "https://m.media-amazon.com/images/M/MV5BMTg4NDA1OTA5NF5BMl5BanBnXkFtZTgwMDQ2MDM5ODE@._V1_SX300.jpg",
+        "Ratings": [
+          {
+            "Source": "Internet Movie Database",
+            "Value": "7.6/10"
+          },
+          {
+            "Source": "Rotten Tomatoes",
+            "Value": "97%"
+          },
+          {
+            "Source": "Metacritic",
+            "Value": "88/100"
+          }
+        ],
+        "Metascore": "88",
+        "imdbRating": "7.6",
+        "imdbVotes": "273,142",
+        "imdbID": "tt2582782",
+        "Type": "movie",
+        "DVD": "N/A",
+        "BoxOffice": "$27,007,844",
+        "Production": "N/A",
+        "Website": "N/A",
+        "Response": "True"
+      }
+    ],
+    "failedAttempts": 0,
+    "lockUntil": null,
+    "signupDate": "2026-02-04T09:44:44.212Z",
+    "__v": 6
   }
 ]
