@@ -203,7 +203,11 @@ const app = express();
   app.use(express.json());
   app.use(cookieParser());
   app.use(app.locals.csrfTokenMiddleware);
+
+  app.use('/uploads', express.static(path.join(__dirname, CONSTANTS.UPLOAD_DIR_NAME)));
+ 
   app.use(express.static(path.join(__dirname, "..", "public")));
+
 }
 
 // ===============================

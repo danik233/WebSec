@@ -241,81 +241,121 @@
         "Response": "True"
       },
       {
-        "Title": "Ted",
-        "Year": "2012",
+        "Title": "Hell or High Water",
+        "Year": "2016",
         "Rated": "R",
-        "Released": "29 Jun 2012",
-        "Runtime": "106 min",
-        "Genre": "Comedy",
-        "Director": "Seth MacFarlane",
-        "Writer": "Seth MacFarlane, Alec Sulkin, Wellesley Wild",
-        "Actors": "Mark Wahlberg, Mila Kunis, Seth MacFarlane",
-        "Plot": "John Bennett, a man whose childhood wish of bringing his teddy bear to life came true, now must decide between keeping the relationship with the bear, Ted or his girlfriend, Lori.",
-        "Language": "English, Japanese, Ukrainian",
+        "Released": "26 Aug 2016",
+        "Runtime": "102 min",
+        "Genre": "Crime, Drama, Thriller",
+        "Director": "David Mackenzie",
+        "Writer": "Taylor Sheridan",
+        "Actors": "Chris Pine, Ben Foster, Jeff Bridges",
+        "Plot": "Toby is a divorced father who's trying to make a better life. His brother is an ex-con with a short temper and a loose trigger finger. Together, they plan a series of heists against the bank that's about to foreclose on their fami...",
+        "Language": "English",
         "Country": "United States",
-        "Awards": "Nominated for 1 Oscar. 13 wins & 28 nominations total",
-        "Poster": "https://m.media-amazon.com/images/M/MV5BMTQ1OTU0ODcxMV5BMl5BanBnXkFtZTcwOTMxNTUwOA@@._V1_SX300.jpg",
+        "Awards": "Nominated for 4 Oscars. 47 wins & 174 nominations total",
+        "Poster": "https://m.media-amazon.com/images/M/MV5BMTg4NDA1OTA5NF5BMl5BanBnXkFtZTgwMDQ2MDM5ODE@._V1_SX300.jpg",
         "Ratings": [
           {
             "Source": "Internet Movie Database",
-            "Value": "6.9/10"
+            "Value": "7.6/10"
           },
           {
             "Source": "Rotten Tomatoes",
-            "Value": "69%"
+            "Value": "97%"
           },
           {
             "Source": "Metacritic",
-            "Value": "62/100"
+            "Value": "88/100"
           }
         ],
-        "Metascore": "62",
-        "imdbRating": "6.9",
-        "imdbVotes": "695,086",
-        "imdbID": "tt1637725",
+        "Metascore": "88",
+        "imdbRating": "7.6",
+        "imdbVotes": "273,142",
+        "imdbID": "tt2582782",
         "Type": "movie",
         "DVD": "N/A",
-        "BoxOffice": "$218,815,487",
+        "BoxOffice": "$27,007,844",
         "Production": "N/A",
         "Website": "N/A",
         "Response": "True"
       },
       {
-        "Title": "Ted 2",
-        "Year": "2015",
-        "Rated": "R",
-        "Released": "26 Jun 2015",
-        "Runtime": "115 min",
-        "Genre": "Comedy",
-        "Director": "Seth MacFarlane",
-        "Writer": "Seth MacFarlane, Alec Sulkin, Wellesley Wild",
-        "Actors": "Mark Wahlberg, Seth MacFarlane, Amanda Seyfried",
-        "Plot": "Newlywed couple Ted and Tami-Lynn want to have a baby, but in order to qualify to be a parent, Ted will have to prove he's a person in a court of law.",
-        "Language": "English, Ukrainian",
-        "Country": "United States",
-        "Awards": "3 wins & 4 nominations total",
-        "Poster": "https://m.media-amazon.com/images/M/MV5BMjEwMDg3MDk1NF5BMl5BanBnXkFtZTgwNjYyODA1NTE@._V1_SX300.jpg",
+        "Title": "Drag Me to Hell",
+        "Year": "2009",
+        "Rated": "PG-13",
+        "Released": "29 May 2009",
+        "Runtime": "99 min",
+        "Genre": "Horror",
+        "Director": "Sam Raimi",
+        "Writer": "Sam Raimi, Ivan Raimi",
+        "Actors": "Alison Lohman, Justin Long, Ruth Livier",
+        "Plot": "An ambitious loan officer must find a way to shatter a curse that threatens her soul with damnation.",
+        "Language": "English, Spanish, Hungarian, Czech",
+        "Country": "United States, India",
+        "Awards": "7 wins & 24 nominations total",
+        "Poster": "https://m.media-amazon.com/images/M/MV5BMTQwNTMyNjc5Ml5BMl5BanBnXkFtZTcwOTI2MTQ0Mg@@._V1_SX300.jpg",
         "Ratings": [
           {
             "Source": "Internet Movie Database",
-            "Value": "6.3/10"
+            "Value": "6.6/10"
           },
           {
             "Source": "Rotten Tomatoes",
-            "Value": "45%"
+            "Value": "92%"
           },
           {
             "Source": "Metacritic",
-            "Value": "48/100"
+            "Value": "83/100"
           }
         ],
-        "Metascore": "48",
-        "imdbRating": "6.3",
-        "imdbVotes": "253,831",
-        "imdbID": "tt2637276",
+        "Metascore": "83",
+        "imdbRating": "6.6",
+        "imdbVotes": "226,065",
+        "imdbID": "tt1127180",
         "Type": "movie",
         "DVD": "N/A",
-        "BoxOffice": "$81,476,385",
+        "BoxOffice": "$42,100,625",
+        "Production": "N/A",
+        "Website": "N/A",
+        "Response": "True"
+      },
+      {
+        "Title": "From Hell",
+        "Year": "2001",
+        "Rated": "R",
+        "Released": "19 Oct 2001",
+        "Runtime": "122 min",
+        "Genre": "Crime, Horror, Mystery",
+        "Director": "Albert Hughes, Allen Hughes",
+        "Writer": "Alan Moore, Eddie Campbell, Terry Hayes",
+        "Actors": "Johnny Depp, Heather Graham, Ian Holm",
+        "Plot": "In 1888 London, a Scotland Yard investigator searches for Jack The Ripper.",
+        "Language": "English",
+        "Country": "United States, United Kingdom, Czech Republic",
+        "Awards": "15 nominations total",
+        "Poster": "https://m.media-amazon.com/images/M/MV5BNzA5N2RlZDItNzc5My00YjIwLWFiMzktYTI1NDg0MDc1YTY1XkEyXkFqcGc@._V1_SX300.jpg",
+        "Ratings": [
+          {
+            "Source": "Internet Movie Database",
+            "Value": "6.7/10"
+          },
+          {
+            "Source": "Rotten Tomatoes",
+            "Value": "56%"
+          },
+          {
+            "Source": "Metacritic",
+            "Value": "54/100"
+          }
+        ],
+        "Metascore": "54",
+        "imdbRating": "6.7",
+        "imdbVotes": "170,511",
+        "imdbID": "tt0120681",
+        "Type": "movie",
+        "DVD": "N/A",
+        "BoxOffice": "$31,602,566",
         "Production": "N/A",
         "Website": "N/A",
         "Response": "True"
@@ -324,7 +364,7 @@
     "failedAttempts": 0,
     "lockUntil": null,
     "signupDate": "2026-01-09T16:10:47.725Z",
-    "__v": 1
+    "__v": 2
   },
   {
     "_id": "6983150c2f20db21c868a69b",
