@@ -251,21 +251,5 @@ Rotation Support – Secrets can be rotated periodically without requiring appli
 
 Audit Logging – Access to secrets is logged for security auditing purposes.
 
-Example Usage in Node.js:
-
-import AWS from 'aws-sdk';
-
-const client = new AWS.SecretsManager({ region: 'us-east-1' });
-
-async function getSecret(secretName) {
-  const data = await client.getSecretValue({ SecretId: secretName }).promise();
-  if ('SecretString' in data) return JSON.parse(data.SecretString);
-  throw new Error('Secret binary not supported yet.');
-}
-
-// Usage
-const secrets = await getSecret('IsraTubeAppSecrets');
-const dbUri = secrets.MONGO_URI;
-
 
 This approach ensures that sensitive credentials are never exposed in code repositories and helps IsraTube maintain enterprise-grade security compliance.
