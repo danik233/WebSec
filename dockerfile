@@ -13,7 +13,7 @@ RUN npm install
 # Copy all project files
 COPY . .
 
-# Expose port (match your app)
+# Expose port
 EXPOSE 3000
 
 # Start the server

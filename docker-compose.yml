@@ -1,4 +1,3 @@
-version: "3.9"
 services:
   web:
     build: .
@@ -13,6 +12,7 @@ services:
       - PASSWORD_ADMIN=${PASSWORD_ADMIN}
     depends_on:
       - mongo
+      - localstack
 
   mongo:
     image: mongo:7
@@ -21,6 +21,22 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+
+  localstack:
+    image: localstack/localstack:2.1
+    container_name: localstack
+    ports:
+      - "4566:4566"  # main endpoint
+      - "4571:4571"  # optional
+    environment:
+      - SERVICES=secretsmanager
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    volumes:
+      - "./localstack-data:/tmp/localstack"
 
 volumes:
   mongo-data:
