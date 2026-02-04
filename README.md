@@ -13,9 +13,7 @@
 - [API Documentation](#api-documentation)
 - [Security Features](#security-features)
 - [Testing](#testing)
-- [Configuration](#configuration)
-- [Contributing](#contributing)
-- [License](#license)
+
 
 ---
 
