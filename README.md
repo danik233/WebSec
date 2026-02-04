@@ -13,6 +13,7 @@
 - [API Documentation](#api-documentation)
 - [Security Features](#security-features)
 - [Testing](#testing)
+- [Secure Manager] (#Secure Manager)
 
 
 ---
@@ -231,3 +232,40 @@ Allowed File Types:
 | Text  | .txt       | text/plain     | 10MB     |
 | ZIP   | .zip       | application/zip| 10MB     |
 
+
+🔑 Secure Manager
+
+IsraTube leverages a Secure Manager approach to safely handle sensitive data such as passwords, API keys, and database credentials. This ensures that secrets are never hard-coded into the source code.
+
+Key Capabilities:
+
+Centralized Secret Storage – All sensitive credentials (DB URI, email passwords, JWT secrets) are stored securely in AWS Secrets Manager or .env files in development.
+
+Automatic Retrieval – Secrets are fetched programmatically at runtime and injected into the application environment.
+
+Encryption at Rest & In Transit – Secrets are encrypted using AWS KMS or local encryption libraries, ensuring they cannot be read in plaintext.
+
+Role-Based Access – Only authorized processes and admins can access specific secrets.
+
+Rotation Support – Secrets can be rotated periodically without requiring application downtime.
+
+Audit Logging – Access to secrets is logged for security auditing purposes.
+
+Example Usage in Node.js:
+
+import AWS from 'aws-sdk';
+
+const client = new AWS.SecretsManager({ region: 'us-east-1' });
+
+async function getSecret(secretName) {
+  const data = await client.getSecretValue({ SecretId: secretName }).promise();
+  if ('SecretString' in data) return JSON.parse(data.SecretString);
+  throw new Error('Secret binary not supported yet.');
+}
+
+// Usage
+const secrets = await getSecret('IsraTubeAppSecrets');
+const dbUri = secrets.MONGO_URI;
+
+
+This approach ensures that sensitive credentials are never exposed in code repositories and helps IsraTube maintain enterprise-grade security compliance.
