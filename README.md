@@ -1,6 +1,6 @@
 # IsraTube 📺🎵
 
-![IsraTube Banner](assets/banner.png)
+
 
 ---
 
